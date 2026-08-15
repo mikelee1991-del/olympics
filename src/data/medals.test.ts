@@ -9,7 +9,7 @@ const sample: CountryStanding[] = [
     gold: 2,
     silver: 1,
     bronze: 0,
-    highlightSport: 'Biathlon',
+    highlightSport: 'Athletics',
   },
   {
     id: 'b',
@@ -18,7 +18,7 @@ const sample: CountryStanding[] = [
     gold: 2,
     silver: 2,
     bronze: 0,
-    highlightSport: 'Snowboard',
+    highlightSport: 'Swimming',
   },
   {
     id: 'c',
@@ -27,7 +27,7 @@ const sample: CountryStanding[] = [
     gold: 3,
     silver: 0,
     bronze: 0,
-    highlightSport: 'Ice Hockey',
+    highlightSport: 'Diving',
   },
 ]
 

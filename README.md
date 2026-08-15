@@ -1,6 +1,7 @@
-# Olympics
+# LA 2028 Olympics
 
-Vite + React + TypeScript app for LA 2028 family ticket planning (plus a small medal-table demo).
+Vite + React + TypeScript app for **Los Angeles 2028 Summer Olympics** family
+ticket planning (plus a small summer medal-table demo).
 
 ## Prerequisites
 

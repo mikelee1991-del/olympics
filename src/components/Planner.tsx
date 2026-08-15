@@ -119,13 +119,14 @@ export default function Planner() {
   return (
     <div className="planner" data-testid="planner">
       <header className="planner-hero">
-        <p className="eyebrow">Family ticket planner</p>
-        <h1>Interactive schedule</h1>
+        <p className="eyebrow">LA 2028 Summer Olympics · Los Angeles</p>
+        <h1>Family ticket planner</h1>
         <p className="lede">
           Seeded from your spreadsheet medal days for sports the family ranked
-          highly. Default attendees are top-3 picks (everyone for Ceremonies /
-          Athletics / Swimming). Session times are editable estimates — mark
-          Have / Want / Skip, adjust who is going, and we flag double-books.
+          highly (July 2028 Summer Games). Default attendees are top-3 picks
+          (everyone for Ceremonies / Athletics / Swimming). Session times are
+          editable estimates — mark Have / Want / Skip, adjust who is going, and
+          we flag double-books.
         </p>
         <div className="stat-row">
           <span data-testid="count-have">{counts.have} have tickets</span>

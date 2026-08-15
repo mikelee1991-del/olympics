@@ -12,7 +12,7 @@ export default function App() {
     <div className="page">
       <header className="topbar">
         <a className="brand" href="#top">
-          Olympics
+          LA28
         </a>
         <nav className="nav" aria-label="Primary">
           <button

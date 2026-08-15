@@ -20,12 +20,14 @@ describe('App watchlist', () => {
     await user.click(screen.getByRole('button', { name: 'Medal demo' }))
     expect(screen.getByTestId('watchlist-empty')).toBeInTheDocument()
 
-    const norwayButton = screen.getByRole('button', {
-      name: 'Add Norway to watchlist',
+    const usaButton = screen.getByRole('button', {
+      name: 'Add United States to watchlist',
     })
-    await user.click(norwayButton)
+    await user.click(usaButton)
 
-    expect(screen.getByTestId('watchlist-items')).toHaveTextContent('Norway')
+    expect(screen.getByTestId('watchlist-items')).toHaveTextContent(
+      'United States',
+    )
   })
 })
 

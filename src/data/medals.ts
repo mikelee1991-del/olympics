@@ -1,10 +1,10 @@
 export type Sport =
-  | 'Alpine Skiing'
-  | 'Figure Skating'
-  | 'Ice Hockey'
-  | 'Snowboard'
-  | 'Speed Skating'
-  | 'Biathlon'
+  | 'Athletics'
+  | 'Swimming'
+  | 'Artistic Gymnastics'
+  | 'Basketball'
+  | 'Cycling Track'
+  | 'Diving'
 
 export type CountryStanding = {
   id: string
@@ -16,69 +16,70 @@ export type CountryStanding = {
   highlightSport: Sport
 }
 
+/** Sample LA 2028 Summer Games medal table (demo data only). */
 export const STANDINGS: CountryStanding[] = [
-  {
-    id: 'nor',
-    country: 'Norway',
-    noc: 'NOR',
-    gold: 16,
-    silver: 8,
-    bronze: 13,
-    highlightSport: 'Biathlon',
-  },
-  {
-    id: 'ger',
-    country: 'Germany',
-    noc: 'GER',
-    gold: 12,
-    silver: 10,
-    bronze: 8,
-    highlightSport: 'Alpine Skiing',
-  },
   {
     id: 'usa',
     country: 'United States',
     noc: 'USA',
-    gold: 11,
-    silver: 12,
-    bronze: 9,
-    highlightSport: 'Snowboard',
+    gold: 18,
+    silver: 14,
+    bronze: 12,
+    highlightSport: 'Athletics',
   },
   {
     id: 'chn',
     country: 'China',
     noc: 'CHN',
-    gold: 9,
-    silver: 7,
-    bronze: 6,
-    highlightSport: 'Speed Skating',
+    gold: 15,
+    silver: 11,
+    bronze: 9,
+    highlightSport: 'Diving',
   },
   {
-    id: 'swe',
-    country: 'Sweden',
-    noc: 'SWE',
-    gold: 8,
-    silver: 6,
-    bronze: 5,
-    highlightSport: 'Ice Hockey',
-  },
-  {
-    id: 'can',
-    country: 'Canada',
-    noc: 'CAN',
-    gold: 7,
-    silver: 9,
+    id: 'aus',
+    country: 'Australia',
+    noc: 'AUS',
+    gold: 12,
+    silver: 10,
     bronze: 8,
-    highlightSport: 'Ice Hockey',
+    highlightSport: 'Swimming',
+  },
+  {
+    id: 'gbr',
+    country: 'Great Britain',
+    noc: 'GBR',
+    gold: 10,
+    silver: 9,
+    bronze: 7,
+    highlightSport: 'Cycling Track',
+  },
+  {
+    id: 'fra',
+    country: 'France',
+    noc: 'FRA',
+    gold: 9,
+    silver: 8,
+    bronze: 10,
+    highlightSport: 'Artistic Gymnastics',
+  },
+  {
+    id: 'jpn',
+    country: 'Japan',
+    noc: 'JPN',
+    gold: 8,
+    silver: 7,
+    bronze: 9,
+    highlightSport: 'Artistic Gymnastics',
   },
   {
     id: 'ned',
     country: 'Netherlands',
     noc: 'NED',
     gold: 7,
-    silver: 5,
-    bronze: 4,
-    highlightSport: 'Speed Skating',
+    silver: 6,
+    bronze: 5,
+    highlightSport: 'Cycling Track',
   },
   {
     id: 'ita',
@@ -87,25 +88,25 @@ export const STANDINGS: CountryStanding[] = [
     gold: 6,
     silver: 8,
     bronze: 7,
-    highlightSport: 'Alpine Skiing',
+    highlightSport: 'Athletics',
   },
   {
-    id: 'fra',
-    country: 'France',
-    noc: 'FRA',
+    id: 'ger',
+    country: 'Germany',
+    noc: 'GER',
     gold: 5,
     silver: 7,
     bronze: 6,
-    highlightSport: 'Alpine Skiing',
+    highlightSport: 'Swimming',
   },
   {
-    id: 'jpn',
-    country: 'Japan',
-    noc: 'JPN',
+    id: 'can',
+    country: 'Canada',
+    noc: 'CAN',
     gold: 5,
     silver: 4,
     bronze: 8,
-    highlightSport: 'Figure Skating',
+    highlightSport: 'Basketball',
   },
 ]
 
@@ -131,10 +132,10 @@ export function rankStandings(
 }
 
 export const SPORTS: Sport[] = [
-  'Alpine Skiing',
-  'Figure Skating',
-  'Ice Hockey',
-  'Snowboard',
-  'Speed Skating',
-  'Biathlon',
+  'Athletics',
+  'Swimming',
+  'Artistic Gymnastics',
+  'Basketball',
+  'Cycling Track',
+  'Diving',
 ]

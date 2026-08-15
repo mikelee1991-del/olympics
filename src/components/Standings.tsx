@@ -64,17 +64,17 @@ export default function Standings() {
       <section className="hero" id="top" aria-labelledby="hero-brand">
         <div className="hero-copy">
           <p className="hero-brand" id="hero-brand">
-            Olympics
+            LA28
           </p>
-          <h1>Follow every podium finish.</h1>
+          <h1>Los Angeles 2028 Summer Games.</h1>
           <p className="hero-lede">
-            Demo medal table — use Schedule planner for family tickets.
+            Demo summer medal table — use Schedule planner for family tickets.
           </p>
         </div>
         <div className="hero-visual" aria-hidden="true">
           <img
             className="hero-image"
-            src="https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1600&q=80"
+            src="https://images.unsplash.com/photo-1461896836934-ffe607ba6851?auto=format&fit=crop&w=1600&q=80"
             alt=""
           />
           <div className="hero-scrim" />
