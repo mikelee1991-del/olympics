@@ -1,6 +1,6 @@
 # Olympics
 
-Vite + React + TypeScript demo app: medal standings with a country watchlist.
+Vite + React + TypeScript app for LA 2028 family ticket planning (plus a small medal-table demo).
 
 ## Prerequisites
 
@@ -31,8 +31,18 @@ App runs at http://localhost:5173
 | `pnpm build` | Typecheck and production build |
 | `pnpm preview` | Preview production build |
 
-## App behavior
+## Schedule planner
 
-- Browse sample Winter Games medal standings
-- Filter by highlight sport
-- Pin countries to a watchlist (persisted in `localStorage`)
+Default tab: interactive family schedule seeded from `Olympics_Scheduling.xlsx` medal days for sports people ranked.
+
+- Set each session to **have** / **want** / **skip** tickets
+- Toggle attendees (Mike + family)
+- Edit date/time/venue (times start as estimates)
+- Map shows active venues (Leaflet / OSM)
+- Conflict panel lists per-person double-books and tight long-distance travel
+
+State persists in `localStorage` (`olympics-planner-v1`).
+
+## Medal demo
+
+Secondary tab with sample standings + country watchlist.
