@@ -366,3 +366,400 @@ th {
     padding-top: 5rem;
   }
 }
+
+.nav-btn {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.75;
+  padding: 0;
+}
+
+.nav-btn.active,
+.nav-btn:hover {
+  opacity: 1;
+  color: var(--ice);
+}
+
+.planner-hero {
+  margin: 1.5rem 0 1.25rem;
+}
+
+.planner-hero .eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  color: var(--ice);
+  font-weight: 700;
+}
+
+.planner-hero h1 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.planner-hero .lede {
+  max-width: 52rem;
+  color: color-mix(in srgb, var(--snow) 78%, var(--fog));
+}
+
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.1rem;
+  margin-top: 1rem;
+  font-weight: 700;
+  color: #ffe9a8;
+}
+
+.planner-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.planner-toolbar .inline {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+}
+
+.planner-toolbar select,
+.event-form select,
+.event-form input,
+.event-form textarea {
+  background: color-mix(in srgb, var(--ink-soft) 80%, black);
+  color: var(--snow);
+  border: 1px solid color-mix(in srgb, var(--fog) 35%, transparent);
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+}
+
+.day-rail {
+  display: flex;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.day-chip {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--fog) 30%, transparent);
+  background: transparent;
+  color: var(--snow);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.day-chip.active {
+  background: color-mix(in srgb, var(--signal) 25%, transparent);
+  border-color: var(--signal);
+}
+
+.planner-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.9fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.session-card {
+  border-top: 1px solid color-mix(in srgb, var(--fog) 22%, transparent);
+  padding: 0.9rem 0 1rem;
+}
+
+.session-card.conflicted {
+  border-left: 3px solid var(--signal);
+  padding-left: 0.75rem;
+}
+
+.session-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.session-card .when {
+  margin: 0;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--snow) 65%, var(--fog));
+}
+
+.session-card h3 {
+  margin: 0.2rem 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  letter-spacing: 0.02em;
+}
+
+.session-card .venue {
+  margin: 0;
+  color: color-mix(in srgb, var(--snow) 75%, var(--fog));
+}
+
+.kind {
+  font-size: 0.7rem;
+  vertical-align: middle;
+  border: 1px solid color-mix(in srgb, var(--fog) 40%, transparent);
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  margin-left: 0.35rem;
+}
+
+.kind-MEDAL,
+.kind-CEREMONY {
+  border-color: var(--gold);
+  color: #ffe9a8;
+}
+
+.ticket-toggle {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.tix {
+  border: 1px solid color-mix(in srgb, var(--fog) 35%, transparent);
+  background: transparent;
+  color: var(--snow);
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tix.active.have {
+  background: color-mix(in srgb, #2d8a4e 35%, transparent);
+  border-color: #2d8a4e;
+}
+
+.tix.active.want {
+  background: color-mix(in srgb, var(--gold) 25%, transparent);
+  border-color: var(--gold);
+}
+
+.tix.active.skip {
+  background: color-mix(in srgb, var(--fog) 20%, transparent);
+  opacity: 0.8;
+}
+
+.attendees {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+
+.person {
+  border: 1px solid color-mix(in srgb, var(--fog) 30%, transparent);
+  background: transparent;
+  color: var(--snow);
+  border-radius: 999px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.person.on {
+  background: color-mix(in srgb, var(--ice) 28%, transparent);
+  border-color: var(--ice);
+}
+
+.notes {
+  margin: 0.55rem 0 0;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--snow) 65%, var(--fog));
+}
+
+.session-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.planner-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 4.5rem;
+}
+
+.map-shell {
+  height: 320px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--fog) 25%, transparent);
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+  background: #0a1a2a;
+}
+
+.panel {
+  border-top: 1px solid color-mix(in srgb, var(--fog) 25%, transparent);
+  padding-top: 0.75rem;
+}
+
+.panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.panel.ok .ok-msg {
+  color: #8dleb6;
+  color: #9ddeb6;
+}
+
+.conflict-person h3 {
+  margin: 0.75rem 0 0.35rem;
+}
+
+.conflict-person ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.conflict-person li {
+  margin-bottom: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tag {
+  display: inline-block;
+  width: fit-content;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.tag.overlap {
+  background: color-mix(in srgb, var(--signal) 30%, transparent);
+}
+
+.tag.tight-travel {
+  background: color-mix(in srgb, var(--gold) 25%, transparent);
+}
+
+.linkish {
+  border: 0;
+  background: transparent;
+  color: var(--snow);
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 50;
+}
+
+.modal {
+  width: min(640px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--fog) 30%, transparent);
+  border-radius: 0.85rem;
+  padding: 1.1rem 1.2rem 1.3rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.event-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.88rem;
+  margin-bottom: 0.65rem;
+}
+
+.event-form .check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.attendee-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.btn-danger {
+  border: 1px solid var(--signal);
+  background: transparent;
+  color: #ffb4aa;
+  border-radius: 999px;
+  padding: 0.7rem 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .planner-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .planner-side {
+    position: static;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

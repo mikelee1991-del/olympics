@@ -19,4 +19,8 @@ Standard scripts are in the root `package.json` / `README.md`:
 
 - Package manager is **pnpm** (`pnpm-lock.yaml`). Prefer it over npm/yarn.
 - Watchlist state is stored in browser `localStorage` under key `olympics-watchlist`.
-- Hero imagery loads from Unsplash; offline/egress-restricted environments may show a broken hero image, but standings/watchlist still work.
+- Family schedule planner state is under `olympics-planner-v1` (sessions, tickets, attendees).
+- Planner session times are **estimates** seeded from the spreadsheet medal calendar; edit times when real session times/tickets are known.
+- Venue map uses OpenStreetMap tiles via Leaflet — needs network egress for tiles.
+- Hero imagery on the medal demo tab loads from Unsplash; planner does not depend on it.
+- `pnpm-workspace.yaml` must allow `esbuild` builds (`allowBuilds.esbuild: true`) for Vite.
