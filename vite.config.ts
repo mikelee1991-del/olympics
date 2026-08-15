@@ -6,6 +6,8 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    // Allow Cloudflare quick tunnels / Cursor previews while developing.
+    allowedHosts: true,
   },
   test: {
     environment: 'jsdom',
