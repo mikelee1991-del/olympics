@@ -138,11 +138,26 @@ export const MIKE_PRIORITY: Record<string, number> = {
   'Water Polo': 2,
 }
 
-export function interestedPeople(sport: string): PersonId[] {
+export function interestedPeople(sport: string, maxRank = 3): PersonId[] {
   const people: PersonId[] = []
   if ((MIKE_PRIORITY[sport] ?? 99) <= 2) people.push('Mike')
   for (const [person, ranks] of Object.entries(FAMILY_RANKS)) {
-    if (ranks.includes(sport)) people.push(person as PersonId)
+    const idx = ranks.indexOf(sport)
+    if (idx >= 0 && idx < maxRank) {
+      people.push(person as PersonId)
+    }
+  }
+  // Ceremonies / Athletics / Swimming: include anyone who ranked them at all
+  if (
+    sport === 'Ceremonies' ||
+    sport === 'Athletics' ||
+    sport === 'Swimming'
+  ) {
+    for (const [person, ranks] of Object.entries(FAMILY_RANKS)) {
+      if (ranks.includes(sport) && !people.includes(person as PersonId)) {
+        people.push(person as PersonId)
+      }
+    }
   }
   return people
 }

@@ -121,10 +121,11 @@ export default function Planner() {
       <header className="planner-hero">
         <p className="eyebrow">Family ticket planner</p>
         <h1>Interactive schedule</h1>
-        <p className="lede">
-          Seeded from your spreadsheet medal days for sports the family ranked.
-          Session times are editable estimates — mark Have / Want / Skip, assign
-          people, and we flag double-books.
+        <p>
+          Seeded from your spreadsheet medal days for sports the family ranked
+          highly. Default attendees are top-3 picks (everyone for Ceremonies /
+          Athletics / Swimming). Session times are editable estimates — mark
+          Have / Want / Skip, adjust who is going, and we flag double-books.
         </p>
         <div className="stat-row">
           <span data-testid="count-have">{counts.have} have tickets</span>
