@@ -34,13 +34,14 @@ App runs at http://localhost:5173
 
 ## Schedule planner
 
-Default tab: interactive family schedule seeded from `Olympics_Scheduling.xlsx` medal days for sports people ranked.
+Split into focused tabs:
 
-- Set each session to **have** / **want** / **skip** tickets
-- Toggle attendees (Mike + family)
-- Edit date/time/venue (times start as estimates)
-- Map shows active venues (Leaflet / OSM)
-- Conflict panel lists per-person double-books and tight long-distance travel
+| Tab | Purpose |
+| --- | --- |
+| **Calendar** | July 2028 month grid + day agenda |
+| **Sessions** | Have / Want / Skip tickets and attendees |
+| **Map** | Venue pins for the selected day |
+| **Conflicts** | Per-person double-books and tight travel |
 
 State persists in `localStorage` (`olympics-planner-v1`).
 

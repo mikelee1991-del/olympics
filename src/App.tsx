@@ -1,38 +1,64 @@
 import { useState } from 'react'
-import Planner from './components/Planner'
+import CalendarView from './components/CalendarView'
+import SessionsView from './components/SessionsView'
+import MapView from './components/MapView'
+import ConflictsView from './components/ConflictsView'
 import Standings from './components/Standings'
+import { usePlan } from './hooks/usePlan'
 import './App.css'
 
-type Tab = 'planner' | 'standings'
+type Tab = 'calendar' | 'sessions' | 'map' | 'conflicts' | 'standings'
+
+const TABS: Array<{ id: Tab; label: string }> = [
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'sessions', label: 'Sessions' },
+  { id: 'map', label: 'Map' },
+  { id: 'conflicts', label: 'Conflicts' },
+  { id: 'standings', label: 'Medal demo' },
+]
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('planner')
+  const [tab, setTab] = useState<Tab>('calendar')
+  const plan = usePlan()
 
   return (
-    <div className="page">
+    <div className="page" data-testid="planner">
       <header className="topbar">
         <a className="brand" href="#top">
           LA28
         </a>
         <nav className="nav" aria-label="Primary">
-          <button
-            type="button"
-            className={tab === 'planner' ? 'nav-btn active' : 'nav-btn'}
-            onClick={() => setTab('planner')}
-          >
-            Schedule planner
-          </button>
-          <button
-            type="button"
-            className={tab === 'standings' ? 'nav-btn active' : 'nav-btn'}
-            onClick={() => setTab('standings')}
-          >
-            Medal demo
-          </button>
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={tab === t.id ? 'nav-btn active' : 'nav-btn'}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
         </nav>
       </header>
 
-      {tab === 'planner' ? <Planner /> : <Standings />}
+      {tab === 'calendar' ? (
+        <CalendarView
+          plan={plan}
+          onOpenSessions={() => setTab('sessions')}
+          onOpenMap={() => setTab('map')}
+        />
+      ) : null}
+      {tab === 'sessions' ? (
+        <SessionsView plan={plan} onOpenMap={() => setTab('map')} />
+      ) : null}
+      {tab === 'map' ? <MapView plan={plan} /> : null}
+      {tab === 'conflicts' ? (
+        <ConflictsView
+          plan={plan}
+          onOpenSessions={() => setTab('sessions')}
+        />
+      ) : null}
+      {tab === 'standings' ? <Standings /> : null}
     </div>
   )
 }
