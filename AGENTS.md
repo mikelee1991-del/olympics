@@ -30,3 +30,4 @@ Standard scripts are in the root `package.json` / `README.md`:
 - Hero imagery on the medal demo tab loads from Unsplash (summer athletics); planner does not depend on it.
 - `pnpm-workspace.yaml` must allow `esbuild` builds (`allowBuilds.esbuild: true`) for Vite.
 - `.cursor/environment.json` declares port 5173 for Cursor Agents Window forwarding.
+- Production static host: GitHub Pages via `.github/workflows/deploy-pages.yml` (set `GITHUB_PAGES=true` for `/olympics/` base path).

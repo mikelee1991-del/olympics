@@ -1,7 +1,11 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
+// GitHub Pages serves this repo at /olympics/ when GITHUB_PAGES=true.
+const base = process.env.GITHUB_PAGES === 'true' ? '/olympics/' : '/'
+
 export default defineConfig({
+  base,
   plugins: [react()],
   server: {
     host: '0.0.0.0',

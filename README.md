@@ -3,6 +3,15 @@
 Vite + React + TypeScript app for **Los Angeles 2028 Summer Olympics** family
 ticket planning (plus a small summer medal-table demo).
 
+## Live site (GitHub Pages)
+
+After Pages is enabled on this repo:
+
+**https://mikelee1991-del.github.io/olympics/**
+
+> The repo must be **public** (or on GitHub Pro) for Pages to be publicly reachable.
+> In GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
 ## Prerequisites
 
 - Node.js 22+
