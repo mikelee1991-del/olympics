@@ -1,6 +1,16 @@
-# Olympics
+# LA 2028 Olympics
 
-Vite + React + TypeScript demo app: medal standings with a country watchlist.
+Vite + React + TypeScript app for **Los Angeles 2028 Summer Olympics** family
+ticket planning (plus a small summer medal-table demo).
+
+## Live site (GitHub Pages)
+
+After Pages is enabled on this repo:
+
+**https://mikelee1991-del.github.io/olympics/**
+
+> The repo must be **public** (or on GitHub Pro) for Pages to be publicly reachable.
+> In GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
 ## Prerequisites
 
@@ -31,8 +41,19 @@ App runs at http://localhost:5173
 | `pnpm build` | Typecheck and production build |
 | `pnpm preview` | Preview production build |
 
-## App behavior
+## Schedule planner
 
-- Browse sample Winter Games medal standings
-- Filter by highlight sport
-- Pin countries to a watchlist (persisted in `localStorage`)
+Split into focused tabs:
+
+| Tab | Purpose |
+| --- | --- |
+| **Calendar** | July 2028 month grid + day agenda |
+| **Sessions** | Have / Want / Skip tickets and attendees |
+| **Map** | Venue pins for the selected day |
+| **Conflicts** | Per-person double-books and tight travel |
+
+State persists in `localStorage` (`olympics-planner-v1`).
+
+## Medal demo
+
+Secondary tab with sample standings + country watchlist.

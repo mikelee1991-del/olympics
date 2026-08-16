@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import App from './App'
+import { PLANNER_STORAGE_KEY } from './data/planner'
 
 describe('App watchlist', () => {
   beforeEach(() => {
@@ -12,21 +13,71 @@ describe('App watchlist', () => {
     cleanup()
   })
 
-  it('adds a country to the watchlist when Watch is clicked', async () => {
+  it('adds a country to the watchlist from the medal demo tab', async () => {
     const user = userEvent.setup()
     render(<App />)
 
+    await user.click(screen.getByRole('button', { name: 'Medal demo' }))
     expect(screen.getByTestId('watchlist-empty')).toBeInTheDocument()
 
-    const norwayButton = screen.getByRole('button', {
-      name: 'Add Norway to watchlist',
+    const usaButton = screen.getByRole('button', {
+      name: 'Add United States to watchlist',
     })
-    await user.click(norwayButton)
+    await user.click(usaButton)
 
-    const list = screen.getByTestId('watchlist-items')
-    expect(within(list).getByText('Norway')).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent(
-      'Added Norway to your watchlist',
+    expect(screen.getByTestId('watchlist-items')).toHaveTextContent(
+      'United States',
     )
+  })
+})
+
+describe('Split planner views', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    cleanup()
+  })
+
+  it('shows a July 2028 calendar by default', () => {
+    render(<App />)
+    expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
+    expect(screen.getByTestId('month-calendar')).toHaveTextContent('July 2028')
+  })
+
+  it('opens sessions view and toggles ticket status', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Sessions' }))
+    expect(screen.getByTestId('sessions-view')).toBeInTheDocument()
+
+    const daySelect = screen.getByLabelText('Day')
+    await user.selectOptions(daySelect, '')
+
+    const haveButtons = screen.getAllByRole('button', {
+      name: /Mark .+ as have/,
+    })
+    await user.click(haveButtons[0])
+
+    await user.click(screen.getByRole('button', { name: 'have' }))
+    expect(screen.getByTestId('session-list').querySelectorAll('article').length).toBeGreaterThan(
+      0,
+    )
+    expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeTruthy()
+  })
+
+  it('navigates to map and conflicts views', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    const nav = screen.getByRole('navigation', { name: 'Primary' })
+    await user.click(within(nav).getByRole('button', { name: 'Map' }))
+    expect(screen.getByTestId('map-view')).toBeInTheDocument()
+    expect(screen.getByTestId('venue-map')).toBeInTheDocument()
+
+    await user.click(within(nav).getByRole('button', { name: 'Conflicts' }))
+    expect(screen.getByTestId('conflicts-view')).toBeInTheDocument()
   })
 })

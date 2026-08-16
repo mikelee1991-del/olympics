@@ -1,0 +1,17 @@
+{
+  "name": "olympics",
+  "install": "pnpm install",
+  "terminals": [
+    {
+      "name": "dev",
+      "command": "pnpm dev",
+      "description": "Vite app on port 5173"
+    }
+  ],
+  "ports": [
+    {
+      "name": "vite",
+      "port": 5173
+    }
+  ]
+}
