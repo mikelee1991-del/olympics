@@ -3,9 +3,11 @@ import { PEOPLE, type PersonId } from '../data/family'
 import {
   ALL_SPORTS,
   formatDisplayDate,
+  type AccessKind,
   type PlannedSession,
   type TicketStatus,
 } from '../data/planner'
+import { accessLabel } from '../data/access'
 import { VENUES, resolveVenueId } from '../data/venues'
 
 type Props = {
@@ -29,6 +31,7 @@ function emptySession(): PlannedSession {
     attendees: ['Mike'],
     notes: '',
     timeEstimated: true,
+    access: 'ticketed',
   }
 }
 
@@ -60,6 +63,7 @@ export default function EventForm({
       attendees,
       notes: String(fd.get('notes') || ''),
       timeEstimated: fd.get('timeEstimated') === 'on',
+      access: String(fd.get('access') || 'ticketed') as AccessKind,
     }
     onSave(session)
   }
@@ -137,6 +141,14 @@ export default function EventForm({
             <option value="have">Have tickets</option>
             <option value="want">Want tickets</option>
             <option value="skip">Skip / not going</option>
+          </select>
+        </label>
+        <label>
+          Access
+          <select name="access" defaultValue={draft.access ?? 'ticketed'}>
+            <option value="ticketed">{accessLabel('ticketed')}</option>
+            <option value="free">{accessLabel('free')}</option>
+            <option value="boat">{accessLabel('boat')}</option>
           </select>
         </label>
         <label className="check">

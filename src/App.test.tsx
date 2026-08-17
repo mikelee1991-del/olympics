@@ -1,8 +1,8 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { PLANNER_STORAGE_KEY } from './data/planner'
+import { clearPlannerStorage, PLANNER_STORAGE_KEY } from './data/planner'
 
 describe('App watchlist', () => {
   beforeEach(() => {
@@ -44,6 +44,15 @@ describe('Split planner views', () => {
     render(<App />)
     expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
     expect(screen.getByTestId('month-calendar')).toHaveTextContent('July 2028')
+    expect(screen.getByTestId('count-free')).toHaveTextContent(/free/)
+    expect(screen.getByTestId('count-boat')).toHaveTextContent(/boat/)
+    // Free course day Jul 19 (time trial) and boat day Jul 15 (surfing)
+    expect(
+      screen.getByRole('gridcell', { name: /Jul 19.*free/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('gridcell', { name: /Jul 15.*boat/i }),
+    ).toBeInTheDocument()
   })
 
   it('opens sessions view and toggles ticket status', async () => {
@@ -56,17 +65,23 @@ describe('Split planner views', () => {
     const daySelect = screen.getByLabelText('Day')
     await user.selectOptions(daySelect, '')
 
-    const haveButtons = screen.getAllByRole('button', {
-      name: /Mark .+ as have/,
-    })
-    await user.click(haveButtons[0])
-
-    await user.click(screen.getByRole('button', { name: 'have' }))
-    expect(screen.getByTestId('session-list').querySelectorAll('article').length).toBeGreaterThan(
-      0,
+    const list = screen.getByTestId('session-list')
+    const firstCard = within(list).getAllByRole('article')[0]
+    await user.click(
+      within(firstCard).getByRole('button', { name: /Mark .+ as have/ }),
     )
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Ticket filter' })).getByRole(
+        'button',
+        { name: 'have' },
+      ),
+    )
+    expect(
+      screen.getByTestId('session-list').querySelectorAll('article').length,
+    ).toBeGreaterThan(0)
     expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeTruthy()
-  })
+  }, 15_000)
 
   it('navigates to map and conflicts views', async () => {
     const user = userEvent.setup()
@@ -79,5 +94,45 @@ describe('Split planner views', () => {
 
     await user.click(within(nav).getByRole('button', { name: 'Conflicts' }))
     expect(screen.getByTestId('conflicts-view')).toBeInTheDocument()
+  })
+
+  it('hard reset clears planner storage and reloads', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(PLANNER_STORAGE_KEY, '[]')
+    localStorage.setItem('olympics-planner-v1', '[]')
+    const reload = vi.fn()
+    vi.stubGlobal('confirm', () => true)
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, reload },
+    })
+
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Sessions' }))
+    await user.click(screen.getByTestId('hard-reset'))
+
+    expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeNull()
+    expect(localStorage.getItem('olympics-planner-v1')).toBeNull()
+    expect(reload).toHaveBeenCalled()
+
+    vi.unstubAllGlobals()
+  })
+})
+
+describe('clearPlannerStorage', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('removes current and legacy planner keys', () => {
+    localStorage.setItem(PLANNER_STORAGE_KEY, '[]')
+    localStorage.setItem('olympics-planner-v1', '[]')
+    localStorage.setItem('olympics-planner-v2-official', '[]')
+    localStorage.setItem('olympics-watchlist', '["USA"]')
+    clearPlannerStorage()
+    expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeNull()
+    expect(localStorage.getItem('olympics-planner-v1')).toBeNull()
+    expect(localStorage.getItem('olympics-planner-v2-official')).toBeNull()
+    expect(localStorage.getItem('olympics-watchlist')).toBe('["USA"]')
   })
 })

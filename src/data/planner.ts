@@ -1,8 +1,16 @@
+import {
+  accessNote,
+  classifyAccess,
+  freeOrBoatCodes,
+  type AccessKind,
+} from './access'
 import { interestedPeople, type PersonId } from './family'
 import { resolveVenueId } from './venues'
+import official from './officialSessions.json'
 
 export type TicketStatus = 'have' | 'want' | 'skip'
 export type SessionKind = 'MEDAL' | 'STD' | 'CEREMONY' | 'OTHER'
+export type { AccessKind }
 
 export type PlannedSession = {
   id: string
@@ -11,276 +19,41 @@ export type PlannedSession = {
   venueId: string
   /** ISO date YYYY-MM-DD (2028) */
   date: string
-  /** HH:MM 24h local */
+  /** HH:MM 24h Pacific */
   startTime: string
   endTime: string
   kind: SessionKind
   ticketStatus: TicketStatus
   attendees: PersonId[]
   notes: string
-  /** true when start/end are editable guesses, not official times */
+  /** true when start/end are guesses, not from LA28 PDF */
   timeEstimated: boolean
+  /** Official LA28 session code when known (e.g. ATH01) */
+  sessionCode?: string
+  /** Ticketed vs course-free vs boat-viewable */
+  access: AccessKind
 }
 
-export type DayCell = 'MEDAL' | 'STD' | 'B' | 'R' | 'CEREMONY'
-
-/** Compact schedule from Olympics_Scheduling.xlsx Schedule sheet. */
-export const SPORT_CALENDAR: Array<{
+export type OfficialSession = {
+  code: string
   sport: string
   venue: string
-  days: Partial<Record<string, DayCell>>
-}> = [
-  {
-    sport: 'Archery',
-    venue: 'Carson Stadium',
-    days: {
-      '20-Jul': 'MEDAL',
-      '21-Jul': 'STD',
-      '22-Jul': 'STD',
-      '23-Jul': 'MEDAL',
-      '24-Jul': 'MEDAL',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Artistic Gymnastics',
-    venue: 'DTLA Arena',
-    days: {
-      '15-Jul': 'STD',
-      '16-Jul': 'MEDAL',
-      '17-Jul': 'MEDAL',
-      '18-Jul': 'MEDAL',
-      '19-Jul': 'MEDAL',
-      '21-Jul': 'MEDAL',
-      '22-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Athletics',
-    venue: 'LA Memorial Coliseum / Venice Beach',
-    days: {
-      '14-Jul': 'MEDAL',
-      '15-Jul': 'MEDAL',
-      '16-Jul': 'MEDAL',
-      '17-Jul': 'MEDAL',
-      '18-Jul': 'MEDAL',
-      '19-Jul': 'MEDAL',
-      '20-Jul': 'MEDAL',
-      '21-Jul': 'MEDAL',
-      '23-Jul': 'MEDAL',
-      '25-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Beach Volleyball',
-    venue: 'Alamitos Beach Stadium',
-    days: Object.fromEntries(
-      [
-        15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-      ].map((d) => [`${d}-Jul`, 'STD']),
-    ),
-  },
-  {
-    sport: 'Canoe Sprint',
-    venue: 'Marine Stadium',
-    days: {
-      '24-Jul': 'STD',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-      '28-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Ceremonies',
-    venue: 'LA Memorial Coliseum',
-    days: { '13-Jul': 'CEREMONY', '30-Jul': 'CEREMONY' },
-  },
-  {
-    sport: 'Climbing',
-    venue: 'Long Beach Climbing Theater',
-    days: {
-      '24-Jul': 'STD',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-      '28-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Cycling Track',
-    venue: 'Carson Velodrome',
-    days: {
-      '24-Jul': 'MEDAL',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-      '28-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Diving',
-    venue: 'Rose Bowl Aquatics Center',
-    days: {
-      '15-Jul': 'STD',
-      '16-Jul': 'MEDAL',
-      '17-Jul': 'STD',
-      '18-Jul': 'MEDAL',
-      '19-Jul': 'STD',
-      '20-Jul': 'MEDAL',
-      '21-Jul': 'MEDAL',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-      '28-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Equestrian',
-    venue: 'Santa Anita Park',
-    days: {
-      '15-Jul': 'STD',
-      '16-Jul': 'STD',
-      '17-Jul': 'STD',
-      '18-Jul': 'MEDAL',
-      '19-Jul': 'STD',
-      '20-Jul': 'MEDAL',
-      '21-Jul': 'MEDAL',
-      '23-Jul': 'STD',
-      '24-Jul': 'MEDAL',
-      '25-Jul': 'STD',
-      '26-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Modern Pentathlon',
-    venue: 'Valley Complex 2',
-    days: {
-      '15-Jul': 'STD',
-      '16-Jul': 'STD',
-      '17-Jul': 'MEDAL',
-      '18-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Mountain Bike',
-    venue: 'Industry Hill MTB Course',
-    days: { '18-Jul': 'MEDAL', '19-Jul': 'MEDAL' },
-  },
-  {
-    sport: 'Rowing',
-    venue: 'Marine Stadium',
-    days: {
-      '15-Jul': 'STD',
-      '16-Jul': 'STD',
-      '17-Jul': 'MEDAL',
-      '18-Jul': 'MEDAL',
-      '19-Jul': 'MEDAL',
-      '20-Jul': 'MEDAL',
-      '21-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Rugby Sevens',
-    venue: 'Carson Stadium',
-    days: {
-      '12-Jul': 'STD',
-      '13-Jul': 'STD',
-      '14-Jul': 'MEDAL',
-      '15-Jul': 'STD',
-      '16-Jul': 'STD',
-      '17-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Swimming',
-    venue: '2028 Stadium',
-    days: {
-      '22-Jul': 'MEDAL',
-      '23-Jul': 'MEDAL',
-      '24-Jul': 'MEDAL',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-      '28-Jul': 'MEDAL',
-      '29-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Table Tennis',
-    venue: 'LA Convention Center Hall 3',
-    days: {
-      '15-Jul': 'STD',
-      '16-Jul': 'STD',
-      '17-Jul': 'MEDAL',
-      '18-Jul': 'MEDAL',
-      '19-Jul': 'MEDAL',
-      '20-Jul': 'STD',
-      '21-Jul': 'STD',
-      '22-Jul': 'MEDAL',
-      '23-Jul': 'MEDAL',
-      '24-Jul': 'STD',
-      '25-Jul': 'STD',
-      '26-Jul': 'STD',
-      '27-Jul': 'MEDAL',
-      '28-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Tennis',
-    venue: 'Carson Courts',
-    days: {
-      '18-Jul': 'STD',
-      '19-Jul': 'MEDAL',
-      '20-Jul': 'STD',
-      '21-Jul': 'STD',
-      '22-Jul': 'STD',
-      '23-Jul': 'STD',
-      '24-Jul': 'STD',
-      '25-Jul': 'MEDAL',
-      '26-Jul': 'MEDAL',
-      '27-Jul': 'MEDAL',
-    },
-  },
-  {
-    sport: 'Volleyball',
-    venue: 'Honda Center',
-    days: Object.fromEntries(
-      [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27].map((d) => [
-        `${d}-Jul`,
-        'STD',
-      ]),
-    ),
-  },
-  {
-    sport: 'Water Polo',
-    venue: 'Long Beach Aquatics Center',
-    days: Object.fromEntries(
-      [12, 13, 14, 15, 16, 17, 18, 19, 20].map((d) => [`${d}-Jul`, 'STD']),
-    ),
-  },
-]
-
-// Volleyball finals
-SPORT_CALENDAR.find((s) => s.sport === 'Volleyball')!.days['28-Jul'] = 'MEDAL'
-SPORT_CALENDAR.find((s) => s.sport === 'Volleyball')!.days['29-Jul'] = 'MEDAL'
-SPORT_CALENDAR.find((s) => s.sport === 'Water Polo')!.days['21-Jul'] = 'MEDAL'
-SPORT_CALENDAR.find((s) => s.sport === 'Water Polo')!.days['22-Jul'] = 'MEDAL'
-
-const MONTH = 7
-const YEAR = 2028
-
-export function sheetDayToIso(day: string): string {
-  const n = Number(day.replace('-Jul', ''))
-  return `${YEAR}-${String(MONTH).padStart(2, '0')}-${String(n).padStart(2, '0')}`
+  zone: string
+  date: string
+  startTime: string
+  endTime: string
+  sessionType: string
+  description: string
 }
 
-export function isoToSheetDay(iso: string): string {
-  const day = Number(iso.slice(8, 10))
-  return `${day}-Jul`
+export const OFFICIAL_META = {
+  source: official.source,
+  sourceUrl: official.sourceUrl,
+  timezone: official.timezone,
 }
+
+export const OFFICIAL_SESSIONS = official.sessions as OfficialSession[]
+export const OFFICIAL_SEED_CODES = new Set(official.seedCodes as string[])
 
 export function formatDisplayDate(iso: string): string {
   const d = new Date(`${iso}T12:00:00`)
@@ -291,113 +64,128 @@ export function formatDisplayDate(iso: string): string {
   })
 }
 
-/** Default session windows by kind — editable estimates only. */
-function defaultTimes(
-  sport: string,
-  kind: SessionKind,
-): { start: string; end: string } {
-  if (kind === 'CEREMONY') {
-    return sport.includes('Closing') || false
-      ? { start: '19:00', end: '22:30' }
-      : { start: '18:00', end: '22:00' }
+function kindFromOfficial(s: OfficialSession): SessionKind {
+  if (s.sessionType === 'Ceremony' || s.sport === 'Ceremonies') return 'CEREMONY'
+  if (
+    s.sessionType === 'Final' ||
+    /medal/i.test(s.description) ||
+    s.sessionType === 'Semifinal'
+  ) {
+    return 'MEDAL'
   }
-  // Evening finals bias for showcase sports
-  const evening = new Set([
-    'Athletics',
-    'Swimming',
-    'Artistic Gymnastics',
-    'Diving',
-    'Cycling Track',
-    'Volleyball',
-    'Rugby Sevens',
-  ])
-  if (evening.has(sport) || kind === 'MEDAL') {
-    return { start: '19:00', end: '22:00' }
-  }
-  return { start: '14:00', end: '17:00' }
+  return 'STD'
 }
 
-const SEED_SPORTS = new Set([
-  'Ceremonies',
-  'Athletics',
-  'Swimming',
-  'Cycling Track',
-  'Rugby Sevens',
-  'Volleyball',
-  'Artistic Gymnastics',
-  'Diving',
-  'Table Tennis',
-  'Canoe Sprint',
-  'Modern Pentathlon',
-  'Climbing',
-  'Rowing',
-  'Beach Volleyball',
-  'Equestrian',
-  'Tennis',
-  'Mountain Bike',
-  'Water Polo',
-])
+export function officialToPlanned(s: OfficialSession): PlannedSession {
+  const access = classifyAccess(s)
+  const note = accessNote(access)
+  const baseNotes = `${s.sessionType}: ${s.description}`.trim()
+  return {
+    id: s.code.toLowerCase(),
+    sport: s.sport,
+    venueLabel: s.venue,
+    venueId: resolveVenueId(s.venue),
+    date: s.date,
+    startTime: s.startTime,
+    endTime: s.endTime,
+    kind: kindFromOfficial(s),
+    // Free course events don't need a ticket purchase.
+    ticketStatus: access === 'free' ? 'have' : 'want',
+    attendees: interestedPeople(s.sport),
+    notes: note ? `${baseNotes} — ${note}` : baseNotes,
+    timeEstimated: false,
+    sessionCode: s.code,
+    access,
+  }
+}
 
+/** Family wishlist + any officially free / boat-viewable sessions. */
 export function buildSeedPlan(): PlannedSession[] {
-  const sessions: PlannedSession[] = []
+  const codes = new Set([
+    ...OFFICIAL_SEED_CODES,
+    ...freeOrBoatCodes(OFFICIAL_SESSIONS),
+  ])
+  return OFFICIAL_SESSIONS.filter((s) => codes.has(s.code))
+    .map(officialToPlanned)
+    .sort((a, b) =>
+      `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
+    )
+}
 
-  for (const row of SPORT_CALENDAR) {
-    if (!SEED_SPORTS.has(row.sport)) continue
-    for (const [day, cell] of Object.entries(row.days)) {
-      if (!cell) continue
-      // Seed ceremonies + medal days + a few key STD (beach VB, water polo finals week)
-      const seedStd =
-        (row.sport === 'Beach Volleyball' &&
-          ['20-Jul', '22-Jul', '25-Jul'].includes(day)) ||
-        (row.sport === 'Water Polo' && ['20-Jul', '21-Jul', '22-Jul'].includes(day))
-      if (cell !== 'MEDAL' && cell !== 'CEREMONY' && !seedStd) continue
+/** Backfill access on older saved plans. */
+export function withAccess(session: PlannedSession): PlannedSession {
+  if (session.access) return session
+  const access = classifyAccess({
+    sport: session.sport,
+    venue: session.venueLabel,
+    description: session.notes,
+  })
+  return { ...session, access }
+}
 
-      const kind: SessionKind =
-        cell === 'CEREMONY' ? 'CEREMONY' : cell === 'MEDAL' ? 'MEDAL' : 'STD'
-      const times = defaultTimes(row.sport, kind)
-      if (day === '30-Jul' && row.sport === 'Ceremonies') {
-        times.start = '19:00'
-        times.end = '22:30'
-      }
-      const attendees = interestedPeople(row.sport)
-      const ticketStatus: TicketStatus =
-        row.sport === 'Ceremonies' ||
-        row.sport === 'Athletics' ||
-        row.sport === 'Swimming'
-          ? 'want'
-          : attendees.length >= 4
-            ? 'want'
-            : 'want'
+/**
+ * Ensure free / boat-viewable official sessions exist in a saved plan and carry
+ * the correct access tags (so older localStorage still shows them on Calendar).
+ */
+export function mergeFreeBoatSessions(
+  sessions: PlannedSession[],
+): PlannedSession[] {
+  const byId = new Map(
+    sessions.map((s) => [s.id, withAccess(s)] as const),
+  )
 
-      sessions.push({
-        id: `${row.sport}-${day}-${kind}`.replace(/\s+/g, '-').toLowerCase(),
-        sport: row.sport,
-        venueLabel: row.venue,
-        venueId: resolveVenueId(row.venue),
-        date: sheetDayToIso(day),
-        startTime: times.start,
-        endTime: times.end,
-        kind,
-        ticketStatus,
-        attendees,
-        notes:
-          kind === 'CEREMONY'
-            ? day === '13-Jul'
-              ? 'Opening Ceremony — estimated evening start'
-              : 'Closing Ceremony — estimated evening start'
-            : 'Session time is an estimate — edit when tickets/session times are known.',
-        timeEstimated: true,
-      })
+  for (const official of OFFICIAL_SESSIONS) {
+    const access = classifyAccess(official)
+    if (access === 'ticketed') continue
+    const planned = officialToPlanned(official)
+    const existing = byId.get(planned.id)
+    if (!existing) {
+      byId.set(planned.id, planned)
+      continue
     }
+    byId.set(planned.id, {
+      ...existing,
+      access,
+      venueLabel: planned.venueLabel,
+      venueId: planned.venueId,
+      date: planned.date,
+      startTime: planned.startTime,
+      endTime: planned.endTime,
+      kind: planned.kind,
+      sessionCode: planned.sessionCode,
+      timeEstimated: false,
+      ticketStatus:
+        access === 'free' && existing.ticketStatus !== 'skip'
+          ? 'have'
+          : existing.ticketStatus,
+      notes: existing.notes.includes('LA28:') || existing.notes.includes('boat')
+        ? existing.notes
+        : planned.notes,
+    })
   }
 
-  return sessions.sort((a, b) =>
+  return [...byId.values()].sort((a, b) =>
     `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
   )
 }
 
 export const ALL_SPORTS = [
-  ...new Set(SPORT_CALENDAR.map((s) => s.sport)),
+  ...new Set(OFFICIAL_SESSIONS.map((s) => s.sport)),
 ].sort()
 
-export const PLANNER_STORAGE_KEY = 'olympics-planner-v1'
+/** Bump key when seed source changes so browsers pick up free/boat tags. */
+export const PLANNER_STORAGE_KEY = 'olympics-planner-v3-access'
+
+/** Clear every planner key (current + legacy) before a hard reset. */
+export function clearPlannerStorage(): void {
+  const doomed = new Set<string>([
+    PLANNER_STORAGE_KEY,
+    'olympics-planner-v1',
+    'olympics-planner-v2-official',
+  ])
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith('olympics-planner-')) doomed.add(key)
+  }
+  for (const key of doomed) localStorage.removeItem(key)
+}

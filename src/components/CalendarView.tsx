@@ -2,12 +2,18 @@ import MonthCalendar from './MonthCalendar'
 import SessionList from './SessionList'
 import EditModal from './EditModal'
 import type { PlanState } from '../hooks/usePlan'
-import { formatDisplayDate } from '../data/planner'
+import { formatDisplayDate, type PlannedSession } from '../data/planner'
 
 type Props = {
   plan: PlanState
   onOpenSessions: () => void
   onOpenMap: () => void
+}
+
+function accessRank(s: PlannedSession): number {
+  if (s.access === 'free') return 0
+  if (s.access === 'boat') return 1
+  return 2
 }
 
 export default function CalendarView({
@@ -18,7 +24,14 @@ export default function CalendarView({
   const daySessions = plan.sessions
     .filter((s) => s.date === plan.selectedDate)
     .filter((s) => s.ticketStatus !== 'skip')
-    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+    .sort((a, b) => {
+      const byAccess = accessRank(a) - accessRank(b)
+      if (byAccess !== 0) return byAccess
+      return a.startTime.localeCompare(b.startTime)
+    })
+
+  const dayFree = daySessions.filter((s) => s.access === 'free').length
+  const dayBoat = daySessions.filter((s) => s.access === 'boat').length
 
   return (
     <div className="view calendar-view" data-testid="calendar-view">
@@ -26,14 +39,20 @@ export default function CalendarView({
         <p className="eyebrow">LA 2028 Summer Olympics</p>
         <h1>July calendar</h1>
         <p className="lede">
-          Pick a day to see that agenda. Manage tickets on Sessions; venues on
-          Map; overlaps on Conflicts.
+          Pick a day to see that agenda. Green/blue dots mark{' '}
+          <strong>free course</strong> and <strong>boat-viewable</strong>{' '}
+          sessions. Times come from the LA28 official By Event schedule.
         </p>
         <div className="stat-row">
           <span data-testid="count-have">{plan.counts.have} have</span>
           <span data-testid="count-want">{plan.counts.want} want</span>
+          <span data-testid="count-free">{plan.counts.free} free</span>
+          <span data-testid="count-boat">{plan.counts.boat} boat</span>
           <span data-testid="count-conflicts">
             {plan.counts.overlaps} double-books
+          </span>
+          <span data-testid="count-travel">
+            {plan.counts.cantMakeIt} can&apos;t make it
           </span>
         </div>
       </header>
@@ -54,7 +73,7 @@ export default function CalendarView({
           <p>
             {daySessions.length === 0
               ? 'No active sessions this day.'
-              : `${daySessions.length} session${daySessions.length === 1 ? '' : 's'} (skipped hidden)`}
+              : `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${dayFree || dayBoat ? ` · ${dayFree} free · ${dayBoat} boat` : ''} (skipped hidden)`}
           </p>
         </div>
 

@@ -24,8 +24,8 @@ Standard scripts are in the root `package.json` / `README.md`:
 
 - Package manager is **pnpm** (`pnpm-lock.yaml`). Prefer it over npm/yarn.
 - Watchlist state is stored in browser `localStorage` under key `olympics-watchlist`.
-- Family schedule planner state is under `olympics-planner-v1` (sessions, tickets, attendees).
-- Planner session times are **estimates** seeded from the spreadsheet medal calendar; edit times when real session times/tickets are known.
+- Family schedule planner state is under `olympics-planner-v3-access` (sessions, tickets, attendees, free/boat access tags). Older planner keys are ignored after bumps.
+- Planner seed times come from the LA28 **Competition Schedule by Event V4.0** PDF (`src/data/officialSessions.json`). Conflicts use drive + parking exit/enter + contingency (`src/lib/travel.ts`). Free course events (marathon, race walk, road cycling) and boat-viewable water sports are tagged in `src/data/access.ts`.
 - Venue map uses OpenStreetMap tiles via Leaflet — needs network egress for tiles.
 - Hero imagery on the medal demo tab loads from Unsplash (summer athletics); planner does not depend on it.
 - `pnpm-workspace.yaml` must allow `esbuild` builds (`allowBuilds.esbuild: true`) for Vite.

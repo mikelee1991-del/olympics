@@ -1,4 +1,5 @@
 import { PEOPLE, type PersonId } from '../data/family'
+import { accessLabel, type AccessKind } from '../data/access'
 import { type TicketStatus } from '../data/planner'
 import type { PlanState } from '../hooks/usePlan'
 
@@ -7,6 +8,13 @@ const TICKET_FILTERS: Array<TicketStatus | 'all'> = [
   'have',
   'want',
   'skip',
+]
+
+const ACCESS_FILTERS: Array<AccessKind | 'all'> = [
+  'all',
+  'free',
+  'boat',
+  'ticketed',
 ]
 
 type Props = {
@@ -33,6 +41,18 @@ export default function PlanFilters({
             onClick={() => plan.setTicketFilter(t)}
           >
             {t}
+          </button>
+        ))}
+      </div>
+      <div className="filters" role="group" aria-label="Access filter">
+        {ACCESS_FILTERS.map((a) => (
+          <button
+            key={a}
+            type="button"
+            className={plan.accessFilter === a ? 'chip active' : 'chip'}
+            onClick={() => plan.setAccessFilter(a)}
+          >
+            {a === 'all' ? 'all access' : accessLabel(a)}
           </button>
         ))}
       </div>

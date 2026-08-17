@@ -2,6 +2,7 @@ import SessionList from './SessionList'
 import PlanFilters from './PlanFilters'
 import EditModal from './EditModal'
 import type { PlanState } from '../hooks/usePlan'
+import { OFFICIAL_META } from '../data/planner'
 
 type Props = {
   plan: PlanState
@@ -15,8 +16,13 @@ export default function SessionsView({ plan, onOpenMap }: Props) {
         <p className="eyebrow">Tickets & people</p>
         <h1>Sessions</h1>
         <p className="lede">
-          Mark have / want / skip and who is going. Times are estimates until you
-          edit them.
+          Mark have / want / skip and who is going. Seed times are from{' '}
+          <a href={OFFICIAL_META.sourceUrl} target="_blank" rel="noreferrer">
+            {OFFICIAL_META.source}
+          </a>{' '}
+          ({OFFICIAL_META.timezone}). Sessions tagged <strong>Free</strong> are
+          LA28 non-ticketed course events; <strong>Free w/ boat</strong> are
+          open-water sports you can watch from a boat.
         </p>
       </header>
 
@@ -30,6 +36,14 @@ export default function SessionsView({ plan, onOpenMap }: Props) {
         </button>
         <button type="button" className="btn btn-ghost" onClick={plan.resetSeed}>
           Reset to seed
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger"
+          data-testid="hard-reset"
+          onClick={plan.hardReset}
+        >
+          Hard reset
         </button>
       </div>
 

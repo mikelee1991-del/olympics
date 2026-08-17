@@ -1,4 +1,5 @@
 import { PEOPLE, type PersonId } from '../data/family'
+import { accessLabel } from '../data/access'
 import {
   formatDisplayDate,
   type PlannedSession,
@@ -38,15 +39,15 @@ export default function SessionList({
         const venue = VENUE_BY_ID[s.venueId]
         const hasConflict = conflicts.some(
           (c) =>
-            c.type === 'overlap' &&
             (c.a.id === s.id || c.b.id === s.id) &&
             (personFilter === 'all' || c.person === personFilter),
         )
         return (
           <article
             key={s.id}
-            className={`session-card status-${s.ticketStatus}${hasConflict ? ' conflicted' : ''}`}
+            className={`session-card status-${s.ticketStatus}${hasConflict ? ' conflicted' : ''}${s.access !== 'ticketed' ? ` access-${s.access}` : ''}`}
             data-testid={`session-${s.id}`}
+            data-access={s.access}
           >
             <div className="session-top">
               <div>
@@ -57,6 +58,11 @@ export default function SessionList({
                 <h3>
                   {s.sport}{' '}
                   <span className={`kind kind-${s.kind}`}>{s.kind}</span>
+                  {s.access !== 'ticketed' ? (
+                    <span className={`access-badge access-${s.access}`}>
+                      {accessLabel(s.access)}
+                    </span>
+                  ) : null}
                 </h3>
                 <p className="venue">
                   {s.venueLabel}

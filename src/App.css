@@ -534,6 +534,37 @@ th {
   color: #ffe9a8;
 }
 
+.access-badge {
+  font-size: 0.7rem;
+  vertical-align: middle;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  margin-left: 0.35rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.access-badge.access-free {
+  background: color-mix(in srgb, #2d8a4e 40%, transparent);
+  color: #b8f0c8;
+}
+
+.access-badge.access-boat {
+  background: color-mix(in srgb, #2a6f9e 45%, transparent);
+  color: #b8dff5;
+}
+
+.session-card.access-free {
+  border-left: 3px solid #2d8a4e;
+  padding-left: 0.75rem;
+}
+
+.session-card.access-boat {
+  border-left: 3px solid #2a6f9e;
+  padding-left: 0.75rem;
+}
+
 .ticket-toggle {
   display: flex;
   gap: 0.3rem;
@@ -671,7 +702,8 @@ th {
   background: color-mix(in srgb, var(--signal) 30%, transparent);
 }
 
-.tag.tight-travel {
+.tag.tight-travel,
+.tag.cant-make-it {
   background: color-mix(in srgb, var(--gold) 25%, transparent);
 }
 
@@ -896,6 +928,32 @@ th {
 
 .dot.want {
   background: var(--gold);
+}
+
+.dot.free {
+  background: #3ecf6e;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #3ecf6e 50%, transparent);
+}
+
+.dot.boat {
+  background: #4aa3d9;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #4aa3d9 50%, transparent);
+}
+
+.cal-cell.has-free {
+  background: color-mix(in srgb, #2d8a4e 10%, transparent);
+}
+
+.cal-cell.has-boat {
+  background: color-mix(in srgb, #2a6f9e 12%, transparent);
+}
+
+.cal-cell.has-free.has-boat {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #2d8a4e 14%, transparent),
+    color-mix(in srgb, #2a6f9e 14%, transparent)
+  );
 }
 
 .cal-legend {
