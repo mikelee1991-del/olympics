@@ -129,3 +129,17 @@ export const ALL_SPORTS = [
 
 /** Bump key when seed source changes so browsers pick up free/boat tags. */
 export const PLANNER_STORAGE_KEY = 'olympics-planner-v3-access'
+
+/** Clear every planner key (current + legacy) before a hard reset. */
+export function clearPlannerStorage(): void {
+  const doomed = new Set<string>([
+    PLANNER_STORAGE_KEY,
+    'olympics-planner-v1',
+    'olympics-planner-v2-official',
+  ])
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith('olympics-planner-')) doomed.add(key)
+  }
+  for (const key of doomed) localStorage.removeItem(key)
+}

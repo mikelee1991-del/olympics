@@ -37,6 +37,14 @@ export default function SessionsView({ plan, onOpenMap }: Props) {
         <button type="button" className="btn btn-ghost" onClick={plan.resetSeed}>
           Reset to seed
         </button>
+        <button
+          type="button"
+          className="btn btn-danger"
+          data-testid="hard-reset"
+          onClick={plan.hardReset}
+        >
+          Hard reset
+        </button>
       </div>
 
       <PlanFilters plan={plan} showDateFilter showAllDaysOption />

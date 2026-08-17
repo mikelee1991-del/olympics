@@ -1,8 +1,8 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-import { PLANNER_STORAGE_KEY } from './data/planner'
+import { clearPlannerStorage, PLANNER_STORAGE_KEY } from './data/planner'
 
 describe('App watchlist', () => {
   beforeEach(() => {
@@ -85,5 +85,45 @@ describe('Split planner views', () => {
 
     await user.click(within(nav).getByRole('button', { name: 'Conflicts' }))
     expect(screen.getByTestId('conflicts-view')).toBeInTheDocument()
+  })
+
+  it('hard reset clears planner storage and reloads', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(PLANNER_STORAGE_KEY, '[]')
+    localStorage.setItem('olympics-planner-v1', '[]')
+    const reload = vi.fn()
+    vi.stubGlobal('confirm', () => true)
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, reload },
+    })
+
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Sessions' }))
+    await user.click(screen.getByTestId('hard-reset'))
+
+    expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeNull()
+    expect(localStorage.getItem('olympics-planner-v1')).toBeNull()
+    expect(reload).toHaveBeenCalled()
+
+    vi.unstubAllGlobals()
+  })
+})
+
+describe('clearPlannerStorage', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('removes current and legacy planner keys', () => {
+    localStorage.setItem(PLANNER_STORAGE_KEY, '[]')
+    localStorage.setItem('olympics-planner-v1', '[]')
+    localStorage.setItem('olympics-planner-v2-official', '[]')
+    localStorage.setItem('olympics-watchlist', '["USA"]')
+    clearPlannerStorage()
+    expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeNull()
+    expect(localStorage.getItem('olympics-planner-v1')).toBeNull()
+    expect(localStorage.getItem('olympics-planner-v2-official')).toBeNull()
+    expect(localStorage.getItem('olympics-watchlist')).toBe('["USA"]')
   })
 })

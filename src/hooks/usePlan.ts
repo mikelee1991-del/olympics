@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { type PersonId } from '../data/family'
 import {
   buildSeedPlan,
+  clearPlannerStorage,
   PLANNER_STORAGE_KEY,
   withAccess,
   type AccessKind,
@@ -119,6 +120,20 @@ export function usePlan() {
     updateSessions(buildSeedPlan())
     setSelectedDate('2028-07-14')
     setEditing(null)
+    setTicketFilter('all')
+    setAccessFilter('all')
+    setPersonFilter('all')
+  }
+
+  function hardReset() {
+    if (
+      !window.confirm(
+        'Hard reset: wipe all saved planner data (including older versions) and reload a fresh official seed? This cannot be undone.',
+      )
+    )
+      return
+    clearPlannerStorage()
+    window.location.reload()
   }
 
   return {
@@ -144,6 +159,7 @@ export function usePlan() {
     setTicket,
     togglePerson,
     resetSeed,
+    hardReset,
   }
 }
 
