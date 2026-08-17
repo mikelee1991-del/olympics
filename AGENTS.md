@@ -31,3 +31,4 @@ Standard scripts are in the root `package.json` / `README.md`:
 - `pnpm-workspace.yaml` must allow `esbuild` builds (`allowBuilds.esbuild: true`) for Vite.
 - `.cursor/environment.json` declares port 5173 for Cursor Agents Window forwarding.
 - Production static host: GitHub Pages via `.github/workflows/deploy-pages.yml` (set `GITHUB_PAGES=true` for `/olympics/` base path).
+- **Always merge to `main` when work is done.** Prefer merging the feature PR (not leaving it as draft). `.github/workflows/auto-merge-agent-prs.yml` auto-merges open `cursor/*` → `main` PRs. After merge, Pages redeploys from `main`.
