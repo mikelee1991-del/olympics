@@ -1,0 +1,62 @@
+name: Auto-merge agent PRs
+
+# Merge Cursor agent PRs into main as soon as they are opened or updated.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, converted_to_draft]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  auto-merge:
+    if: >-
+      startsWith(github.event.pull_request.head.ref, 'cursor/') &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Undraft and merge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const pull_number = context.payload.pull_request.number
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number,
+            })
+
+            if (pr.merged) {
+              core.info(`PR #${pull_number} already merged`)
+              return
+            }
+
+            if (pr.draft) {
+              core.info(`Marking PR #${pull_number} ready for review`)
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number,
+                draft: false,
+              })
+            }
+
+            // Brief pause so GitHub finishes transitioning out of draft.
+            await new Promise((r) => setTimeout(r, 2000))
+
+            core.info(`Merging PR #${pull_number}`)
+            await github.rest.pulls.merge({
+              owner,
+              repo,
+              pull_number,
+              merge_method: 'merge',
+            })
