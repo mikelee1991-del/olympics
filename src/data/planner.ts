@@ -123,6 +123,52 @@ export function withAccess(session: PlannedSession): PlannedSession {
   return { ...session, access }
 }
 
+/**
+ * Ensure free / boat-viewable official sessions exist in a saved plan and carry
+ * the correct access tags (so older localStorage still shows them on Calendar).
+ */
+export function mergeFreeBoatSessions(
+  sessions: PlannedSession[],
+): PlannedSession[] {
+  const byId = new Map(
+    sessions.map((s) => [s.id, withAccess(s)] as const),
+  )
+
+  for (const official of OFFICIAL_SESSIONS) {
+    const access = classifyAccess(official)
+    if (access === 'ticketed') continue
+    const planned = officialToPlanned(official)
+    const existing = byId.get(planned.id)
+    if (!existing) {
+      byId.set(planned.id, planned)
+      continue
+    }
+    byId.set(planned.id, {
+      ...existing,
+      access,
+      venueLabel: planned.venueLabel,
+      venueId: planned.venueId,
+      date: planned.date,
+      startTime: planned.startTime,
+      endTime: planned.endTime,
+      kind: planned.kind,
+      sessionCode: planned.sessionCode,
+      timeEstimated: false,
+      ticketStatus:
+        access === 'free' && existing.ticketStatus !== 'skip'
+          ? 'have'
+          : existing.ticketStatus,
+      notes: existing.notes.includes('LA28:') || existing.notes.includes('boat')
+        ? existing.notes
+        : planned.notes,
+    })
+  }
+
+  return [...byId.values()].sort((a, b) =>
+    `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
+  )
+}
+
 export const ALL_SPORTS = [
   ...new Set(OFFICIAL_SESSIONS.map((s) => s.sport)),
 ].sort()

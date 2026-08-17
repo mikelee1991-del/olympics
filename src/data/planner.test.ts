@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { resolveVenueId } from '../data/venues'
-import { buildSeedPlan, OFFICIAL_SESSIONS, OFFICIAL_SEED_CODES } from '../data/planner'
+import {
+  buildSeedPlan,
+  mergeFreeBoatSessions,
+  OFFICIAL_SESSIONS,
+  OFFICIAL_SEED_CODES,
+  type PlannedSession,
+} from './planner'
 
 describe('official seed plan', () => {
   it('builds sessions from LA28 seed codes with clock times', () => {
@@ -13,14 +19,42 @@ describe('official seed plan', () => {
   })
 
   it('resolves seed venues to known map pins', () => {
-    const seeded = OFFICIAL_SESSIONS.filter((s) => OFFICIAL_SEED_CODES.has(s.code))
+    const seeded = OFFICIAL_SESSIONS.filter((s) =>
+      OFFICIAL_SEED_CODES.has(s.code),
+    )
     for (const s of seeded) {
       const id = resolveVenueId(s.venue)
       expect(id).not.toBe('')
-      // Race walk TBD may land on multiple; everything else should pin.
       if (!/TBD/i.test(s.venue)) {
         expect(id).not.toBe('multiple')
       }
     }
+  })
+
+  it('merges free and boat sessions into an older saved plan', () => {
+    const thin: PlannedSession[] = [
+      {
+        id: 'ath01',
+        sport: 'Athletics',
+        venueLabel: 'LA Memorial Coliseum',
+        venueId: 'coliseum',
+        date: '2028-07-15',
+        startTime: '19:00',
+        endTime: '22:00',
+        kind: 'MEDAL',
+        ticketStatus: 'want',
+        attendees: ['Mike'],
+        notes: 'old',
+        timeEstimated: false,
+        sessionCode: 'ATH01',
+        access: 'ticketed',
+      },
+    ]
+    const merged = mergeFreeBoatSessions(thin)
+    expect(merged.some((s) => s.access === 'free')).toBe(true)
+    expect(merged.some((s) => s.access === 'boat')).toBe(true)
+    expect(merged.some((s) => s.sport === 'Cycling Road')).toBe(true)
+    expect(merged.some((s) => s.sport === 'Sailing')).toBe(true)
+    expect(merged.find((s) => s.id === 'ath01')).toBeTruthy()
   })
 })

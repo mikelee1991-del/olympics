@@ -930,6 +930,32 @@ th {
   background: var(--gold);
 }
 
+.dot.free {
+  background: #3ecf6e;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #3ecf6e 50%, transparent);
+}
+
+.dot.boat {
+  background: #4aa3d9;
+  box-shadow: 0 0 0 1px color-mix(in srgb, #4aa3d9 50%, transparent);
+}
+
+.cal-cell.has-free {
+  background: color-mix(in srgb, #2d8a4e 10%, transparent);
+}
+
+.cal-cell.has-boat {
+  background: color-mix(in srgb, #2a6f9e 12%, transparent);
+}
+
+.cal-cell.has-free.has-boat {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #2d8a4e 14%, transparent),
+    color-mix(in srgb, #2a6f9e 14%, transparent)
+  );
+}
+
 .cal-legend {
   display: flex;
   flex-wrap: wrap;

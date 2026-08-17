@@ -18,6 +18,15 @@ function isoDate(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
+type DayStats = {
+  have: number
+  want: number
+  skip: number
+  free: number
+  boat: number
+  total: number
+}
+
 export default function MonthCalendar({
   sessions,
   selectedDate,
@@ -26,14 +35,20 @@ export default function MonthCalendar({
   month = 7,
 }: Props) {
   const byDate = useMemo(() => {
-    const map = new Map<
-      string,
-      { have: number; want: number; skip: number; total: number }
-    >()
+    const map = new Map<string, DayStats>()
     for (const s of sessions) {
-      const cur = map.get(s.date) ?? { have: 0, want: 0, skip: 0, total: 0 }
+      const cur = map.get(s.date) ?? {
+        have: 0,
+        want: 0,
+        skip: 0,
+        free: 0,
+        boat: 0,
+        total: 0,
+      }
       cur.total += 1
       cur[s.ticketStatus] += 1
+      if (s.access === 'free') cur.free += 1
+      if (s.access === 'boat') cur.boat += 1
       map.set(s.date, cur)
     }
     return map
@@ -77,23 +92,32 @@ export default function MonthCalendar({
           }
           const stats = byDate.get(cell.iso)
           const active = selectedDate === cell.iso
-          const inGames =
-            cell.day >= 10 && cell.day <= 30
+          const inGames = cell.day >= 10 && cell.day <= 30
+          const freeBoatBits = [
+            stats?.free ? `${stats.free} free` : null,
+            stats?.boat ? `${stats.boat} boat` : null,
+          ]
+            .filter(Boolean)
+            .join(', ')
           return (
             <button
               key={cell.iso}
               type="button"
               role="gridcell"
-              className={`cal-cell${active ? ' active' : ''}${stats ? ' has-events' : ''}${inGames ? ' games' : ''}`}
-              aria-label={`${formatDisplayDate(cell.iso)}${stats ? `, ${stats.total} sessions` : ''}`}
+              className={`cal-cell${active ? ' active' : ''}${stats ? ' has-events' : ''}${inGames ? ' games' : ''}${stats && stats.free > 0 ? ' has-free' : ''}${stats && stats.boat > 0 ? ' has-boat' : ''}`}
+              aria-label={`${formatDisplayDate(cell.iso)}${stats ? `, ${stats.total} sessions${freeBoatBits ? ` (${freeBoatBits})` : ''}` : ''}`}
               aria-pressed={active}
+              data-free={stats?.free ?? 0}
+              data-boat={stats?.boat ?? 0}
               onClick={() => onSelectDate(cell.iso!)}
             >
               <span className="cal-daynum">{cell.day}</span>
               {stats ? (
                 <span className="cal-dots" aria-hidden="true">
-                  {stats.have > 0 ? <i className="dot have" /> : null}
-                  {stats.want > 0 ? <i className="dot want" /> : null}
+                  {stats.free > 0 ? <i className="dot free" title="Free" /> : null}
+                  {stats.boat > 0 ? <i className="dot boat" title="Boat" /> : null}
+                  {stats.have > stats.free ? <i className="dot have" /> : null}
+                  {stats.want > stats.boat ? <i className="dot want" /> : null}
                   <span className="cal-count">{stats.total}</span>
                 </span>
               ) : (
@@ -105,6 +129,12 @@ export default function MonthCalendar({
       </div>
 
       <div className="cal-legend">
+        <span>
+          <i className="dot free" /> free (course)
+        </span>
+        <span>
+          <i className="dot boat" /> free w/ boat
+        </span>
         <span>
           <i className="dot have" /> have tickets
         </span>
