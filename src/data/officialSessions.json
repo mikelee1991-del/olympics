@@ -3389,7 +3389,7 @@
       "startTime": "09:00",
       "endTime": "16:20",
       "sessionType": "Quarterfinal",
-      "description": "1 Quarterfinal Women's \u00c9p\u00e9e Individual Table of 64 Men's Sabre Individual Table of 64 Women's \u00c9p\u00e9e Individual Table of 32 Men's Sabre Individual Table of 32 Women's \u00c9p\u00e9e Individual Table of 16 Men's Sabre Individual Tabl"
+      "description": "1 Quarterfinal Women's Épée Individual Table of 64 Men's Sabre Individual Table of 64 Women's Épée Individual Table of 32 Men's Sabre Individual Table of 32 Women's Épée Individual Table of 16 Men's Sabre Individual Tabl"
     },
     {
       "code": "FEN02",
@@ -3400,7 +3400,7 @@
       "startTime": "18:30",
       "endTime": "22:35",
       "sessionType": "Final",
-      "description": "1 Final Women's \u00c9p\u00e9e Individual Semifinal Men's Sabre Individual Semifinal Women's \u00c9p\u00e9e Individual Bronze Medal Bout Men's Sabre Individual Bronze Medal Bout Women's \u00c9p\u00e9e Individual Gold Medal Bout Men's Sabre Individual"
+      "description": "1 Final Women's Épée Individual Semifinal Men's Sabre Individual Semifinal Women's Épée Individual Bronze Medal Bout Men's Sabre Individual Bronze Medal Bout Women's Épée Individual Gold Medal Bout Men's Sabre Individual"
     },
     {
       "code": "FEN03",
@@ -3411,7 +3411,7 @@
       "startTime": "09:00",
       "endTime": "17:00",
       "sessionType": "Quarterfinal",
-      "description": "2 Quarterfinal Men's \u00c9p\u00e9e Individual Table of 64 Women's Foil Individual Table of 64 Men's \u00c9p\u00e9e Individual Table of 32 Women's Foil Individual Table of 32 Men's \u00c9p\u00e9e Individual Table of 16 Women's Foil Individual Table o"
+      "description": "2 Quarterfinal Men's Épée Individual Table of 64 Women's Foil Individual Table of 64 Men's Épée Individual Table of 32 Women's Foil Individual Table of 32 Men's Épée Individual Table of 16 Women's Foil Individual Table o"
     },
     {
       "code": "FEN04",
@@ -3422,7 +3422,7 @@
       "startTime": "18:30",
       "endTime": "22:55",
       "sessionType": "Final",
-      "description": "2 Final Men's \u00c9p\u00e9e Individual Semifinal Women's Foil Individual Semifinal Men's \u00c9p\u00e9e Individual Bronze Medal Bout Women's Foil Individual Bronze Medal Bout Men's \u00c9p\u00e9e Individual Gold Medal Bout Women's Foil Individual Go"
+      "description": "2 Final Men's Épée Individual Semifinal Women's Foil Individual Semifinal Men's Épée Individual Bronze Medal Bout Women's Foil Individual Bronze Medal Bout Men's Épée Individual Gold Medal Bout Women's Foil Individual Go"
     },
     {
       "code": "FEN05",
@@ -3455,7 +3455,7 @@
       "startTime": "09:00",
       "endTime": "14:30",
       "sessionType": "Semifinal",
-      "description": "4 Semifinal Women's \u00c9p\u00e9e Team Table of 8 Women's \u00c9p\u00e9e Team Classification 5-8 Women's \u00c9p\u00e9e Team Semifinal Women's \u00c9p\u00e9e Team Placement 7-8 Women's \u00c9p\u00e9e Team Placement 5-6"
+      "description": "4 Semifinal Women's Épée Team Table of 8 Women's Épée Team Classification 5-8 Women's Épée Team Semifinal Women's Épée Team Placement 7-8 Women's Épée Team Placement 5-6"
     },
     {
       "code": "FEN08",
@@ -3466,7 +3466,7 @@
       "startTime": "17:30",
       "endTime": "20:10",
       "sessionType": "Final",
-      "description": "4 Final Women's \u00c9p\u00e9e Team Bronze Medal Match Women's \u00c9p\u00e9e Team Gold Medal Match"
+      "description": "4 Final Women's Épée Team Bronze Medal Match Women's Épée Team Gold Medal Match"
     },
     {
       "code": "FEN09",
@@ -3499,7 +3499,7 @@
       "startTime": "09:00",
       "endTime": "14:20",
       "sessionType": "Semifinal",
-      "description": "6 Semifinal Men's \u00c9p\u00e9e Team Table of 8 Men's \u00c9p\u00e9e Team Classification 5-8 Men's \u00c9p\u00e9e Team Semifinal Men's \u00c9p\u00e9e Team Placement 7-8 Men's \u00c9p\u00e9e Team Placement 5-6"
+      "description": "6 Semifinal Men's Épée Team Table of 8 Men's Épée Team Classification 5-8 Men's Épée Team Semifinal Men's Épée Team Placement 7-8 Men's Épée Team Placement 5-6"
     },
     {
       "code": "FEN12",
@@ -3510,7 +3510,7 @@
       "startTime": "18:30",
       "endTime": "21:10",
       "sessionType": "Final",
-      "description": "6 Final Men's \u00c9p\u00e9e Team Bronze Medal Match Men's \u00c9p\u00e9e Team Gold Medal Match"
+      "description": "6 Final Men's Épée Team Bronze Medal Match Men's Épée Team Gold Medal Match"
     },
     {
       "code": "FEN13",
@@ -3735,13 +3735,13 @@
     {
       "code": "FBL26",
       "sport": "Football (Soccer)",
-      "venue": "San Jos\u00e9 Stadium San Jos\u00e9",
+      "venue": "San José Stadium San José",
       "zone": "Unknown",
       "date": "2028-07-14",
       "startTime": "13:00",
       "endTime": "16:00",
       "sessionType": "Preliminary",
-      "description": "0 Preliminary Women's Group Stage TBD TBD Football (Soccer) San Jos\u00e9 Stadium San Jos\u00e9 FBL39 Monday, July 17 3 Preliminary Women's Group Stage TBD TBD Football (Soccer) San Jos\u00e9 Stadium San Jos\u00e9 FBL40 Monday, July 17 3 Pr"
+      "description": "0 Preliminary Women's Group Stage TBD TBD Football (Soccer) San José Stadium San José FBL39 Monday, July 17 3 Preliminary Women's Group Stage TBD TBD Football (Soccer) San José Stadium San José FBL40 Monday, July 17 3 Pr"
     },
     {
       "code": "FBL53",
@@ -8438,7 +8438,7 @@
       "startTime": "17:00",
       "endTime": "22:00",
       "sessionType": "Ceremony",
-      "description": "Closing Ceremony (evening window estimate from published Games schedule)"
+      "description": "Closing Ceremony (published evening window; subject to change)"
     }
   ],
   "seedCodes": [
