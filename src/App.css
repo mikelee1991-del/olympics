@@ -671,7 +671,8 @@ th {
   background: color-mix(in srgb, var(--signal) 30%, transparent);
 }
 
-.tag.tight-travel {
+.tag.tight-travel,
+.tag.cant-make-it {
   background: color-mix(in srgb, var(--gold) 25%, transparent);
 }
 

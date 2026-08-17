@@ -14,12 +14,15 @@ export default function ConflictsView({ plan, onOpenSessions }: Props) {
         <p className="eyebrow">By person</p>
         <h1>Conflicts</h1>
         <p className="lede">
-          Double-books and tight long-distance hops. Fix times or attendees on
-          Sessions.
+          Double-books and hops that leave too little time for driving and
+          parking. Fix tickets or attendees on Sessions.
         </p>
         <div className="stat-row">
           <span data-testid="count-conflicts">
             {plan.counts.overlaps} double-books
+          </span>
+          <span data-testid="count-travel">
+            {plan.counts.cantMakeIt} can&apos;t make it
           </span>
         </div>
       </header>

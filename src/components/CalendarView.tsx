@@ -26,14 +26,18 @@ export default function CalendarView({
         <p className="eyebrow">LA 2028 Summer Olympics</p>
         <h1>July calendar</h1>
         <p className="lede">
-          Pick a day to see that agenda. Manage tickets on Sessions; venues on
-          Map; overlaps on Conflicts.
+          Pick a day to see that agenda. Session times come from the LA28 official
+          By Event schedule. Manage tickets on Sessions; venues on Map; travel
+          math on Conflicts.
         </p>
         <div className="stat-row">
           <span data-testid="count-have">{plan.counts.have} have</span>
           <span data-testid="count-want">{plan.counts.want} want</span>
           <span data-testid="count-conflicts">
             {plan.counts.overlaps} double-books
+          </span>
+          <span data-testid="count-travel">
+            {plan.counts.cantMakeIt} can&apos;t make it
           </span>
         </div>
       </header>

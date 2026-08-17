@@ -1,13 +1,15 @@
 import type { PersonId } from '../data/family'
 import type { PlannedSession } from '../data/planner'
-import { VENUE_BY_ID } from '../data/venues'
+import { travelBetweenVenues, type TravelPlan } from './travel'
 
 export type Conflict = {
   person: PersonId
   a: PlannedSession
   b: PlannedSession
-  type: 'overlap' | 'tight-travel'
+  /** Hard time overlap vs not enough drive+park buffer */
+  type: 'overlap' | 'cant-make-it'
   minutesBetween: number
+  travel?: TravelPlan
 }
 
 function toMinutes(time: string): number {
@@ -24,33 +26,15 @@ export function sessionsOverlap(a: PlannedSession, b: PlannedSession): boolean {
   return a0 < b1 && b0 < a1
 }
 
-function minutesBetween(a: PlannedSession, b: PlannedSession): number {
+/** Positive minutes from end of earlier session to start of later (same day). */
+export function gapMinutes(a: PlannedSession, b: PlannedSession): number {
   if (a.date !== b.date) return Infinity
-  const first = toMinutes(a.endTime) <= toMinutes(b.startTime) ? a : b
-  const second = first === a ? b : a
-  return toMinutes(second.startTime) - toMinutes(first.endTime)
+  const a0 = toMinutes(a.startTime)
+  const b0 = toMinutes(b.startTime)
+  const earlier = a0 <= b0 ? a : b
+  const later = earlier === a ? b : a
+  return toMinutes(later.startTime) - toMinutes(earlier.endTime)
 }
-
-function haversineKm(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number,
-): number {
-  const R = 6371
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLng = ((lng2 - lng1) * Math.PI) / 180
-  const x =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(x))
-}
-
-/** Flag travel under 90 minutes when venues are > 15 km apart. */
-const TIGHT_TRAVEL_MIN = 90
-const FAR_KM = 15
 
 export function findConflicts(
   sessions: PlannedSession[],
@@ -83,21 +67,26 @@ export function findConflicts(
         continue
       }
 
-      const gap = minutesBetween(a, b)
-      if (gap < 0 || gap > TIGHT_TRAVEL_MIN) continue
-      const va = VENUE_BY_ID[a.venueId]
-      const vb = VENUE_BY_ID[b.venueId]
-      if (!va || !vb) continue
-      const dist = haversineKm(va.lat, va.lng, vb.lat, vb.lng)
-      if (dist < FAR_KM) continue
-      for (const person of shared) {
-        conflicts.push({
-          person,
-          a,
-          b,
-          type: 'tight-travel',
-          minutesBetween: gap,
-        })
+      const gap = gapMinutes(a, b)
+      if (gap === Infinity || gap < 0) continue
+
+      const earlier =
+        toMinutes(a.startTime) <= toMinutes(b.startTime) ? a : b
+      const later = earlier === a ? b : a
+      const travel = travelBetweenVenues(earlier.venueId, later.venueId)
+      if (!travel) continue
+
+      if (gap < travel.requiredGapMin) {
+        for (const person of shared) {
+          conflicts.push({
+            person,
+            a: earlier,
+            b: later,
+            type: 'cant-make-it',
+            minutesBetween: gap,
+            travel,
+          })
+        }
       }
     }
   }

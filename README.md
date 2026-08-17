@@ -50,9 +50,10 @@ Split into focused tabs:
 | **Calendar** | July 2028 month grid + day agenda |
 | **Sessions** | Have / Want / Skip tickets and attendees |
 | **Map** | Venue pins for the selected day |
-| **Conflicts** | Per-person double-books and tight travel |
+| **Conflicts** | Per-person double-books and drive+parking “can’t make it” |
 
-State persists in `localStorage` (`olympics-planner-v1`).
+Seed sessions use official LA28 By Event V4.0 clock times (`src/data/officialSessions.json`).
+State persists in `localStorage` (`olympics-planner-v2-official`).
 
 ## Medal demo
 

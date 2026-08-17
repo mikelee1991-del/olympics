@@ -5,9 +5,14 @@ import {
   sessionsOverlap,
 } from '../lib/conflicts'
 import type { PlannedSession } from '../data/planner'
+import { travelBetweenVenues } from './travel'
 
 function session(
-  partial: Partial<PlannedSession> & Pick<PlannedSession, 'id' | 'date' | 'startTime' | 'endTime' | 'attendees'>,
+  partial: Partial<PlannedSession> &
+    Pick<
+      PlannedSession,
+      'id' | 'date' | 'startTime' | 'endTime' | 'attendees'
+    >,
 ): PlannedSession {
   return {
     sport: 'Athletics',
@@ -16,7 +21,7 @@ function session(
     kind: 'MEDAL',
     ticketStatus: 'want',
     notes: '',
-    timeEstimated: true,
+    timeEstimated: false,
     ...partial,
   }
 }
@@ -109,6 +114,69 @@ describe('findConflicts', () => {
         endTime: '22:00',
         attendees: ['Mike'],
         ticketStatus: 'want',
+      }),
+    ]
+    expect(findConflicts(sessions)).toHaveLength(0)
+  })
+
+  it('flags cant-make-it when gap is shorter than drive+park buffer', () => {
+    const travel = travelBetweenVenues('lb-climb', 'carson-velo')!
+    expect(travel.requiredGapMin).toBeGreaterThan(40)
+    const sessions = [
+      session({
+        id: 'climb',
+        sport: 'Climbing',
+        venueId: 'lb-climb',
+        venueLabel: 'Long Beach Climbing Theater',
+        date: '2028-07-25',
+        startTime: '10:00',
+        endTime: '12:00',
+        attendees: ['Mike'],
+      }),
+      session({
+        id: 'track',
+        sport: 'Cycling Track',
+        venueId: 'carson-velo',
+        venueLabel: 'Carson Velodrome',
+        date: '2028-07-25',
+        startTime: '12:40',
+        endTime: '16:00',
+        attendees: ['Mike'],
+      }),
+    ]
+    const conflicts = findConflicts(sessions)
+    expect(conflicts).toHaveLength(1)
+    expect(conflicts[0].type).toBe('cant-make-it')
+    expect(conflicts[0].travel?.requiredGapMin).toBe(travel.requiredGapMin)
+    expect(conflicts[0].minutesBetween).toBe(40)
+  })
+
+  it('allows hops when gap covers drive and parking', () => {
+    const travel = travelBetweenVenues('lb-climb', 'carson-velo')!
+    const startMin = 12 * 60 + travel.requiredGapMin
+    const h = Math.floor(startMin / 60)
+    const m = startMin % 60
+    const start = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+    const sessions = [
+      session({
+        id: 'climb',
+        sport: 'Climbing',
+        venueId: 'lb-climb',
+        venueLabel: 'Long Beach Climbing Theater',
+        date: '2028-07-25',
+        startTime: '10:00',
+        endTime: '12:00',
+        attendees: ['Mike'],
+      }),
+      session({
+        id: 'track',
+        sport: 'Cycling Track',
+        venueId: 'carson-velo',
+        venueLabel: 'Carson Velodrome',
+        date: '2028-07-25',
+        startTime: start,
+        endTime: '18:00',
+        attendees: ['Mike'],
       }),
     ]
     expect(findConflicts(sessions)).toHaveLength(0)

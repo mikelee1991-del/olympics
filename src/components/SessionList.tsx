@@ -38,7 +38,6 @@ export default function SessionList({
         const venue = VENUE_BY_ID[s.venueId]
         const hasConflict = conflicts.some(
           (c) =>
-            c.type === 'overlap' &&
             (c.a.id === s.id || c.b.id === s.id) &&
             (personFilter === 'all' || c.person === personFilter),
         )

@@ -2,6 +2,7 @@ import SessionList from './SessionList'
 import PlanFilters from './PlanFilters'
 import EditModal from './EditModal'
 import type { PlanState } from '../hooks/usePlan'
+import { OFFICIAL_META } from '../data/planner'
 
 type Props = {
   plan: PlanState
@@ -15,8 +16,11 @@ export default function SessionsView({ plan, onOpenMap }: Props) {
         <p className="eyebrow">Tickets & people</p>
         <h1>Sessions</h1>
         <p className="lede">
-          Mark have / want / skip and who is going. Times are estimates until you
-          edit them.
+          Mark have / want / skip and who is going. Seed times are from{' '}
+          <a href={OFFICIAL_META.sourceUrl} target="_blank" rel="noreferrer">
+            {OFFICIAL_META.source}
+          </a>{' '}
+          ({OFFICIAL_META.timezone}).
         </p>
       </header>
 

@@ -39,7 +39,8 @@ export function usePlan() {
     const want = sessions.filter((s) => s.ticketStatus === 'want').length
     const skip = sessions.filter((s) => s.ticketStatus === 'skip').length
     const overlaps = conflicts.filter((c) => c.type === 'overlap').length
-    return { have, want, skip, overlaps }
+    const cantMakeIt = conflicts.filter((c) => c.type === 'cant-make-it').length
+    return { have, want, skip, overlaps, cantMakeIt }
   }, [sessions, conflicts])
 
   const filtered = useMemo(() => {
@@ -100,7 +101,12 @@ export function usePlan() {
   }
 
   function resetSeed() {
-    if (!window.confirm('Reset plan to seeded family/Mike wishlist?')) return
+    if (
+      !window.confirm(
+        'Reset plan to official LA28 seed times for the family wishlist?',
+      )
+    )
+      return
     updateSessions(buildSeedPlan())
     setSelectedDate('2028-07-14')
     setEditing(null)

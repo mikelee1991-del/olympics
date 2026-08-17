@@ -109,6 +109,13 @@ export const VENUES: Venue[] = [
     area: 'Pasadena',
   },
   {
+    id: 'rose-bowl-stadium',
+    name: 'Rose Bowl Stadium',
+    lat: 34.1613,
+    lng: -118.1676,
+    area: 'Pasadena',
+  },
+  {
     id: 'lb-aquatics',
     name: 'Long Beach Aquatics Center',
     lat: 33.7625,
@@ -274,6 +281,7 @@ export const VENUE_ALIASES: Record<string, string> = {
   'Venice Beach': 'venice',
   'Carson Velodrome': 'carson-velo',
   'Rose Bowl Aquatics Center': 'rose-bowl',
+  'Rose Bowl Stadium': 'rose-bowl-stadium',
   'Santa Anita Park': 'santa-anita',
   'LA Convention Center Hall 1': 'lacc',
   'LA Convention Center Hall 2': 'lacc',
@@ -281,19 +289,82 @@ export const VENUE_ALIASES: Record<string, string> = {
   'Exposition Park Stadium': 'expo',
   'Multiple Stadiums': 'multiple',
   'Riviera Country Club': 'riviera',
+  'Riviera Country Club Riviera': 'riviera',
   'Long Beach Arena': 'lb-arena',
   'Carson Field': 'carson-field',
   'Industry Hill MTB Course': 'industry',
+  'Industry Hills MTB Course': 'industry',
   'Belmont Shore': 'belmont',
+  '(Windsurfing & Kite) Belmont Shore': 'belmont',
   'Honda Center': 'honda',
   'OKC Softball Park': 'okc-softball',
   'Universal Studios': 'universal',
+  'Comcast Squash Center at Universal Studios': 'universal',
   'Trestles Beach': 'trestles',
+  'Trestles State Beach Trestles Beach': 'trestles',
   '2028 Stadium': 'stadium-2028',
   'Carson Courts': 'carson-courts',
+  'Carson Court 1': 'carson-courts',
+  'Carson Court 2': 'carson-courts',
+  'Carson Courts 3-10': 'carson-courts',
+  'Carson Center Court': 'carson-courts',
   'Long Beach / Whittier Narrows': 'whittier',
+  '(Shotgun) Whittier Narrows Clay Shooting Center Whittier Narrows':
+    'whittier',
+  'LA Memorial Coliseum / 2028 Stadium': 'coliseum',
+  '2028 Stadium / LA Memorial Coliseum': 'stadium-2028',
+  'Venice Beach Venice': 'venice',
+  '(Marathon) Venice Beach Boardwalk - Start Venice': 'venice',
+  '(Race Walk) TBD TBD': 'multiple',
+  'Sprint Paddle Marine Stadium': 'marine',
+  '(Rifle & Pistol) Long Beach Target Shooting Hall': 'lb-arena',
+  '- Final Stages DTLA Arena': 'dtla-arena',
+  '- Preliminary Stages Peacock Theater': 'peacock',
 }
 
 export function resolveVenueId(venueLabel: string): string {
-  return VENUE_ALIASES[venueLabel] ?? 'multiple'
+  const direct = VENUE_ALIASES[venueLabel]
+  if (direct) return direct
+  const lower = venueLabel.toLowerCase().trim()
+  for (const [alias, id] of Object.entries(VENUE_ALIASES)) {
+    const a = alias.toLowerCase()
+    if (lower === a || lower.includes(a) || a.includes(lower)) {
+      return id
+    }
+  }
+  // Fuzzy keywords (more specific first)
+  if (/coliseum/.test(lower)) return 'coliseum'
+  if (/2028 stadium|aquatics stadium/.test(lower)) return 'stadium-2028'
+  if (/intuit/.test(lower)) return 'intuit'
+  if (/dodger/.test(lower)) return 'dodger'
+  if (/velodrome/.test(lower)) return 'carson-velo'
+  if (/climbing/.test(lower)) return 'lb-climb'
+  if (/marine stadium|sprint paddle/.test(lower)) return 'marine'
+  if (/alamitos/.test(lower)) return 'alamitos'
+  if (/honda/.test(lower)) return 'honda'
+  if (/santa anita/.test(lower)) return 'santa-anita'
+  if (/rose bowl aquatics/.test(lower)) return 'rose-bowl'
+  if (/rose bowl/.test(lower)) return 'rose-bowl-stadium'
+  if (/convention/.test(lower)) return 'lacc'
+  if (/industry hills|mtb/.test(lower)) return 'industry'
+  if (/galen/.test(lower)) return 'galen'
+  if (/peacock/.test(lower)) return 'peacock'
+  if (/dtla arena/.test(lower)) return 'dtla-arena'
+  if (/valley complex/.test(lower)) return 'valley'
+  if (/long beach arena/.test(lower)) return 'lb-arena'
+  if (/long beach aquatics/.test(lower)) return 'lb-aquatics'
+  if (/carson stadium/.test(lower)) return 'carson-stadium'
+  if (/carson (center )?court/.test(lower)) return 'carson-courts'
+  if (/carson field/.test(lower)) return 'carson-field'
+  if (/exposition park/.test(lower)) return 'expo'
+  if (/belmont/.test(lower)) return 'belmont'
+  if (/trestles/.test(lower)) return 'trestles'
+  if (/venice|marathon/.test(lower) && /beach|boardwalk/.test(lower))
+    return 'venice'
+  if (/universal|squash/.test(lower)) return 'universal'
+  if (/whittier|shotgun|clay shooting/.test(lower)) return 'whittier'
+  if (/riviera/.test(lower)) return 'riviera'
+  if (/okc.*softball|softball.*okc/.test(lower)) return 'okc-softball'
+  if (/whitewater|canoe slalom/.test(lower)) return 'okc-whitewater'
+  return 'multiple'
 }
