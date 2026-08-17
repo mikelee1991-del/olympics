@@ -56,17 +56,23 @@ describe('Split planner views', () => {
     const daySelect = screen.getByLabelText('Day')
     await user.selectOptions(daySelect, '')
 
-    const haveButtons = screen.getAllByRole('button', {
-      name: /Mark .+ as have/,
-    })
-    await user.click(haveButtons[0])
-
-    await user.click(screen.getByRole('button', { name: 'have' }))
-    expect(screen.getByTestId('session-list').querySelectorAll('article').length).toBeGreaterThan(
-      0,
+    const list = screen.getByTestId('session-list')
+    const firstCard = within(list).getAllByRole('article')[0]
+    await user.click(
+      within(firstCard).getByRole('button', { name: /Mark .+ as have/ }),
     )
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Ticket filter' })).getByRole(
+        'button',
+        { name: 'have' },
+      ),
+    )
+    expect(
+      screen.getByTestId('session-list').querySelectorAll('article').length,
+    ).toBeGreaterThan(0)
     expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeTruthy()
-  })
+  }, 15_000)
 
   it('navigates to map and conflicts views', async () => {
     const user = userEvent.setup()

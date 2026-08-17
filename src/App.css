@@ -534,6 +534,37 @@ th {
   color: #ffe9a8;
 }
 
+.access-badge {
+  font-size: 0.7rem;
+  vertical-align: middle;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+  margin-left: 0.35rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.access-badge.access-free {
+  background: color-mix(in srgb, #2d8a4e 40%, transparent);
+  color: #b8f0c8;
+}
+
+.access-badge.access-boat {
+  background: color-mix(in srgb, #2a6f9e 45%, transparent);
+  color: #b8dff5;
+}
+
+.session-card.access-free {
+  border-left: 3px solid #2d8a4e;
+  padding-left: 0.75rem;
+}
+
+.session-card.access-boat {
+  border-left: 3px solid #2a6f9e;
+  padding-left: 0.75rem;
+}
+
 .ticket-toggle {
   display: flex;
   gap: 0.3rem;

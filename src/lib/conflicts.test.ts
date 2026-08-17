@@ -22,6 +22,7 @@ function session(
     ticketStatus: 'want',
     notes: '',
     timeEstimated: false,
+    access: 'ticketed',
     ...partial,
   }
 }

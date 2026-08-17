@@ -1,9 +1,16 @@
+import {
+  accessNote,
+  classifyAccess,
+  freeOrBoatCodes,
+  type AccessKind,
+} from './access'
 import { interestedPeople, type PersonId } from './family'
 import { resolveVenueId } from './venues'
 import official from './officialSessions.json'
 
 export type TicketStatus = 'have' | 'want' | 'skip'
 export type SessionKind = 'MEDAL' | 'STD' | 'CEREMONY' | 'OTHER'
+export type { AccessKind }
 
 export type PlannedSession = {
   id: string
@@ -23,6 +30,8 @@ export type PlannedSession = {
   timeEstimated: boolean
   /** Official LA28 session code when known (e.g. ATH01) */
   sessionCode?: string
+  /** Ticketed vs course-free vs boat-viewable */
+  access: AccessKind
 }
 
 export type OfficialSession = {
@@ -68,6 +77,9 @@ function kindFromOfficial(s: OfficialSession): SessionKind {
 }
 
 export function officialToPlanned(s: OfficialSession): PlannedSession {
+  const access = classifyAccess(s)
+  const note = accessNote(access)
+  const baseNotes = `${s.sessionType}: ${s.description}`.trim()
   return {
     id: s.code.toLowerCase(),
     sport: s.sport,
@@ -77,26 +89,43 @@ export function officialToPlanned(s: OfficialSession): PlannedSession {
     startTime: s.startTime,
     endTime: s.endTime,
     kind: kindFromOfficial(s),
-    ticketStatus: 'want',
+    // Free course events don't need a ticket purchase.
+    ticketStatus: access === 'free' ? 'have' : 'want',
     attendees: interestedPeople(s.sport),
-    notes: `${s.sessionType}: ${s.description}`.trim(),
+    notes: note ? `${baseNotes} — ${note}` : baseNotes,
     timeEstimated: false,
     sessionCode: s.code,
+    access,
   }
 }
 
-/** Seed wishlist from LA28 official By Event V4.0 sessions (family sports). */
+/** Family wishlist + any officially free / boat-viewable sessions. */
 export function buildSeedPlan(): PlannedSession[] {
-  return OFFICIAL_SESSIONS.filter((s) => OFFICIAL_SEED_CODES.has(s.code))
+  const codes = new Set([
+    ...OFFICIAL_SEED_CODES,
+    ...freeOrBoatCodes(OFFICIAL_SESSIONS),
+  ])
+  return OFFICIAL_SESSIONS.filter((s) => codes.has(s.code))
     .map(officialToPlanned)
     .sort((a, b) =>
       `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
     )
 }
 
+/** Backfill access on older saved plans. */
+export function withAccess(session: PlannedSession): PlannedSession {
+  if (session.access) return session
+  const access = classifyAccess({
+    sport: session.sport,
+    venue: session.venueLabel,
+    description: session.notes,
+  })
+  return { ...session, access }
+}
+
 export const ALL_SPORTS = [
   ...new Set(OFFICIAL_SESSIONS.map((s) => s.sport)),
 ].sort()
 
-/** Bump key when seed source changes so browsers pick up official times. */
-export const PLANNER_STORAGE_KEY = 'olympics-planner-v2-official'
+/** Bump key when seed source changes so browsers pick up free/boat tags. */
+export const PLANNER_STORAGE_KEY = 'olympics-planner-v3-access'

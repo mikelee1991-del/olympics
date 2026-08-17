@@ -20,7 +20,9 @@ export default function SessionsView({ plan, onOpenMap }: Props) {
           <a href={OFFICIAL_META.sourceUrl} target="_blank" rel="noreferrer">
             {OFFICIAL_META.source}
           </a>{' '}
-          ({OFFICIAL_META.timezone}).
+          ({OFFICIAL_META.timezone}). Sessions tagged <strong>Free</strong> are
+          LA28 non-ticketed course events; <strong>Free w/ boat</strong> are
+          open-water sports you can watch from a boat.
         </p>
       </header>
 

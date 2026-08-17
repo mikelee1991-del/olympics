@@ -366,5 +366,6 @@ export function resolveVenueId(venueLabel: string): string {
   if (/riviera/.test(lower)) return 'riviera'
   if (/okc.*softball|softball.*okc/.test(lower)) return 'okc-softball'
   if (/whitewater|canoe slalom/.test(lower)) return 'okc-whitewater'
+  if (/port of los angeles|dinghy|skiff|multihull/.test(lower)) return 'marine'
   return 'multiple'
 }

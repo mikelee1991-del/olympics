@@ -5,10 +5,11 @@ import { buildSeedPlan, OFFICIAL_SESSIONS, OFFICIAL_SEED_CODES } from '../data/p
 describe('official seed plan', () => {
   it('builds sessions from LA28 seed codes with clock times', () => {
     const plan = buildSeedPlan()
-    expect(plan.length).toBe(OFFICIAL_SEED_CODES.size)
+    expect(plan.length).toBeGreaterThanOrEqual(OFFICIAL_SEED_CODES.size)
     expect(plan.every((s) => !s.timeEstimated)).toBe(true)
     expect(plan.every((s) => /^\d{2}:\d{2}$/.test(s.startTime))).toBe(true)
     expect(plan[0].sessionCode).toBeTruthy()
+    expect(plan.every((s) => s.access)).toBe(true)
   })
 
   it('resolves seed venues to known map pins', () => {

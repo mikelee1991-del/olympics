@@ -3,6 +3,8 @@ import { type PersonId } from '../data/family'
 import {
   buildSeedPlan,
   PLANNER_STORAGE_KEY,
+  withAccess,
+  type AccessKind,
   type PlannedSession,
   type TicketStatus,
 } from '../data/planner'
@@ -13,7 +15,8 @@ function loadPlan(): PlannedSession[] {
     const raw = localStorage.getItem(PLANNER_STORAGE_KEY)
     if (!raw) return buildSeedPlan()
     const parsed = JSON.parse(raw) as PlannedSession[]
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : buildSeedPlan()
+    if (!Array.isArray(parsed) || parsed.length === 0) return buildSeedPlan()
+    return parsed.map(withAccess)
   } catch {
     return buildSeedPlan()
   }
@@ -27,6 +30,7 @@ export function usePlan() {
   const [sessions, setSessions] = useState<PlannedSession[]>(loadPlan)
   const [selectedDate, setSelectedDate] = useState<string | null>('2028-07-14')
   const [ticketFilter, setTicketFilter] = useState<TicketStatus | 'all'>('all')
+  const [accessFilter, setAccessFilter] = useState<AccessKind | 'all'>('all')
   const [personFilter, setPersonFilter] = useState<PersonId | 'all'>('all')
   const [editing, setEditing] = useState<PlannedSession | null | 'new'>(null)
   const [focusVenueId, setFocusVenueId] = useState<string | null>(null)
@@ -38,9 +42,11 @@ export function usePlan() {
     const have = sessions.filter((s) => s.ticketStatus === 'have').length
     const want = sessions.filter((s) => s.ticketStatus === 'want').length
     const skip = sessions.filter((s) => s.ticketStatus === 'skip').length
+    const free = sessions.filter((s) => s.access === 'free').length
+    const boat = sessions.filter((s) => s.access === 'boat').length
     const overlaps = conflicts.filter((c) => c.type === 'overlap').length
     const cantMakeIt = conflicts.filter((c) => c.type === 'cant-make-it').length
-    return { have, want, skip, overlaps, cantMakeIt }
+    return { have, want, skip, free, boat, overlaps, cantMakeIt }
   }, [sessions, conflicts])
 
   const filtered = useMemo(() => {
@@ -50,12 +56,15 @@ export function usePlan() {
         ticketFilter === 'all' ? true : s.ticketStatus === ticketFilter,
       )
       .filter((s) =>
+        accessFilter === 'all' ? true : s.access === accessFilter,
+      )
+      .filter((s) =>
         personFilter === 'all' ? true : s.attendees.includes(personFilter),
       )
       .sort((a, b) =>
         `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
       )
-  }, [sessions, selectedDate, ticketFilter, personFilter])
+  }, [sessions, selectedDate, ticketFilter, accessFilter, personFilter])
 
   function updateSessions(next: PlannedSession[]) {
     setSessions(next)
@@ -119,6 +128,8 @@ export function usePlan() {
     setSelectedDate,
     ticketFilter,
     setTicketFilter,
+    accessFilter,
+    setAccessFilter,
     personFilter,
     setPersonFilter,
     editing,

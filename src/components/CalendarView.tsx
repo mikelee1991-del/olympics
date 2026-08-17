@@ -33,6 +33,8 @@ export default function CalendarView({
         <div className="stat-row">
           <span data-testid="count-have">{plan.counts.have} have</span>
           <span data-testid="count-want">{plan.counts.want} want</span>
+          <span data-testid="count-free">{plan.counts.free} free</span>
+          <span data-testid="count-boat">{plan.counts.boat} boat</span>
           <span data-testid="count-conflicts">
             {plan.counts.overlaps} double-books
           </span>

@@ -53,7 +53,8 @@ Split into focused tabs:
 | **Conflicts** | Per-person double-books and drive+parking “can’t make it” |
 
 Seed sessions use official LA28 By Event V4.0 clock times (`src/data/officialSessions.json`).
-State persists in `localStorage` (`olympics-planner-v2-official`).
+**Free** tags = LA28 non-ticketed course events; **Free w/ boat** = open-water sports viewable from a boat.
+State persists in `localStorage` (`olympics-planner-v3-access`).
 
 ## Medal demo
 
