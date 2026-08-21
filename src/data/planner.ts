@@ -5,6 +5,11 @@ import {
   type AccessKind,
 } from './access'
 import { interestedPeople, type PersonId } from './family'
+import {
+  OWNED_TICKET_BY_CODE,
+  OWNED_TICKETS,
+  attendeesForOwnedTickets,
+} from './ownedTickets'
 import { resolveVenueId } from './venues'
 import official from './officialSessions.json'
 
@@ -32,6 +37,8 @@ export type PlannedSession = {
   sessionCode?: string
   /** Ticketed vs course-free vs boat-viewable */
   access: AccessKind
+  /** Purchased seat count when known */
+  ticketQty?: number
 }
 
 export type OfficialSession = {
@@ -79,7 +86,12 @@ function kindFromOfficial(s: OfficialSession): SessionKind {
 export function officialToPlanned(s: OfficialSession): PlannedSession {
   const access = classifyAccess(s)
   const note = accessNote(access)
+  const owned = OWNED_TICKET_BY_CODE[s.code]
   const baseNotes = `${s.sessionType}: ${s.description}`.trim()
+  const ownedNote = owned
+    ? `Have ${owned.qty} ticket${owned.qty === 1 ? '' : 's'}${owned.label ? ` (${owned.label})` : ''}.`
+    : ''
+  const notes = [baseNotes, note, ownedNote].filter(Boolean).join(' — ')
   return {
     id: s.code.toLowerCase(),
     sport: s.sport,
@@ -89,21 +101,24 @@ export function officialToPlanned(s: OfficialSession): PlannedSession {
     startTime: s.startTime,
     endTime: s.endTime,
     kind: kindFromOfficial(s),
-    // Free course events don't need a ticket purchase.
-    ticketStatus: access === 'free' ? 'have' : 'want',
-    attendees: interestedPeople(s.sport),
-    notes: note ? `${baseNotes} — ${note}` : baseNotes,
+    ticketStatus: owned || access === 'free' ? 'have' : 'want',
+    attendees: owned
+      ? attendeesForOwnedTickets(s.sport, owned.qty)
+      : interestedPeople(s.sport),
+    notes,
     timeEstimated: false,
     sessionCode: s.code,
     access,
+    ticketQty: owned?.qty,
   }
 }
 
-/** Family wishlist + any officially free / boat-viewable sessions. */
+/** Family wishlist + free/boat sessions + purchased tickets. */
 export function buildSeedPlan(): PlannedSession[] {
   const codes = new Set([
     ...OFFICIAL_SEED_CODES,
     ...freeOrBoatCodes(OFFICIAL_SESSIONS),
+    ...OWNED_TICKETS.map((t) => t.code),
   ])
   return OFFICIAL_SESSIONS.filter((s) => codes.has(s.code))
     .map(officialToPlanned)
@@ -169,12 +184,52 @@ export function mergeFreeBoatSessions(
   )
 }
 
+/** Force purchased tickets into the plan as have (with qty + attendees). */
+export function mergeOwnedTickets(
+  sessions: PlannedSession[],
+): PlannedSession[] {
+  const byId = new Map(sessions.map((s) => [s.id, s] as const))
+
+  for (const owned of OWNED_TICKETS) {
+    const official = OFFICIAL_SESSIONS.find((s) => s.code === owned.code)
+    if (!official) continue
+    const planned = officialToPlanned(official)
+    const existing = byId.get(planned.id)
+    if (!existing) {
+      byId.set(planned.id, planned)
+      continue
+    }
+    byId.set(planned.id, {
+      ...existing,
+      ...planned,
+      // Keep skip only if user explicitly skipped; otherwise mark have.
+      ticketStatus: existing.ticketStatus === 'skip' ? 'skip' : 'have',
+      ticketQty: owned.qty,
+      attendees:
+        existing.attendees.length > 0 &&
+        existing.attendees.length <= owned.qty &&
+        existing.ticketStatus === 'have'
+          ? existing.attendees
+          : planned.attendees,
+    })
+  }
+
+  return [...byId.values()].sort((a, b) =>
+    `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
+  )
+}
+
+/** Apply free/boat + owned-ticket merges for saved plans. */
+export function hydratePlan(sessions: PlannedSession[]): PlannedSession[] {
+  return mergeOwnedTickets(mergeFreeBoatSessions(sessions))
+}
+
 export const ALL_SPORTS = [
   ...new Set(OFFICIAL_SESSIONS.map((s) => s.sport)),
 ].sort()
 
-/** Bump key when seed source changes so browsers pick up free/boat tags. */
-export const PLANNER_STORAGE_KEY = 'olympics-planner-v3-access'
+/** Bump key when owned tickets / seed source changes. */
+export const PLANNER_STORAGE_KEY = 'olympics-planner-v4-owned'
 
 /** Clear every planner key (current + legacy) before a hard reset. */
 export function clearPlannerStorage(): void {
@@ -182,6 +237,7 @@ export function clearPlannerStorage(): void {
     PLANNER_STORAGE_KEY,
     'olympics-planner-v1',
     'olympics-planner-v2-official',
+    'olympics-planner-v3-access',
   ])
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)

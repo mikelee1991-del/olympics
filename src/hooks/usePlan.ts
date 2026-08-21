@@ -3,7 +3,7 @@ import { type PersonId } from '../data/family'
 import {
   buildSeedPlan,
   clearPlannerStorage,
-  mergeFreeBoatSessions,
+  hydratePlan,
   PLANNER_STORAGE_KEY,
   type AccessKind,
   type PlannedSession,
@@ -17,8 +17,7 @@ function loadPlan(): PlannedSession[] {
     if (!raw) return buildSeedPlan()
     const parsed = JSON.parse(raw) as PlannedSession[]
     if (!Array.isArray(parsed) || parsed.length === 0) return buildSeedPlan()
-    const merged = mergeFreeBoatSessions(parsed)
-    // Persist merge so Calendar keeps free/boat after refresh.
+    const merged = hydratePlan(parsed)
     localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(merged))
     return merged
   } catch {
