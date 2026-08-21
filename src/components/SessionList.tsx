@@ -63,6 +63,11 @@ export default function SessionList({
                       {accessLabel(s.access)}
                     </span>
                   ) : null}
+                  {s.ticketQty ? (
+                    <span className="access-badge access-qty">
+                      {s.ticketQty} tix
+                    </span>
+                  ) : null}
                 </h3>
                 <p className="venue">
                   {s.venueLabel}

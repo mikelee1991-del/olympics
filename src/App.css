@@ -555,6 +555,11 @@ th {
   color: #b8dff5;
 }
 
+.access-badge.access-qty {
+  background: color-mix(in srgb, #2d8a4e 45%, transparent);
+  color: #b8f0c8;
+}
+
 .session-card.access-free {
   border-left: 3px solid #2d8a4e;
   padding-left: 0.75rem;

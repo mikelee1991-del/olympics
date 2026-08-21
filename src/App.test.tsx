@@ -46,13 +46,19 @@ describe('Split planner views', () => {
     expect(screen.getByTestId('month-calendar')).toHaveTextContent('July 2028')
     expect(screen.getByTestId('count-free')).toHaveTextContent(/free/)
     expect(screen.getByTestId('count-boat')).toHaveTextContent(/boat/)
-    // Free course day Jul 19 (time trial) and boat day Jul 15 (surfing)
     expect(
       screen.getByRole('gridcell', { name: /Jul 19.*free/i }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('gridcell', { name: /Jul 15.*boat/i }),
     ).toBeInTheDocument()
+  })
+
+  it('shows have tickets from owned purchases on calendar', () => {
+    render(<App />)
+    const have = screen.getByTestId('count-have').textContent ?? ''
+    // Owned ARC10/HBL42/CSP04 + free course events
+    expect(Number.parseInt(have, 10)).toBeGreaterThanOrEqual(3)
   })
 
   it('opens sessions view and toggles ticket status', async () => {
