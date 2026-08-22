@@ -16,8 +16,8 @@ export default function ConflictsView({ plan, onOpenSessions }: Props) {
         <p className="lede">
           Double-books and hops that leave too little time for driving and
           parking. Conflicts are per person you assigned — purchased tickets
-          seat by sport interest; free / boat events stay empty until you opt
-          someone in on Sessions.
+          seat by sport interest; free events (course or boat-viewable) stay
+          empty until you opt someone in on Sessions.
         </p>
         <div className="stat-row">
           <span data-testid="count-conflicts">

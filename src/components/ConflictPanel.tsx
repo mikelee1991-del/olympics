@@ -1,4 +1,4 @@
-import { accessLabel } from '../data/access'
+import { accessLabel, isFreeAccess } from '../data/access'
 import type { Conflict } from '../lib/conflicts'
 import {
   formatDisplayDate,
@@ -12,15 +12,11 @@ type Props = {
 }
 
 function accessKindLabel(s: PlannedSession): string {
-  if (s.access === 'free') return 'Free course'
-  if (s.access === 'boat') return 'Free w/ boat'
-  return 'Ticketed'
+  return accessLabel(s.access)
 }
 
 function accessKindClass(s: PlannedSession): string {
-  if (s.access === 'free') return 'access-free'
-  if (s.access === 'boat') return 'access-boat'
-  return 'access-ticketed'
+  return isFreeAccess(s.access) ? 'access-free' : 'access-ticketed'
 }
 
 function shortSport(sport: string): string {
@@ -85,7 +81,8 @@ export default function ConflictPanel({ byPerson, onFocus }: Props) {
         <h2>Conflicts</h2>
         <p className="ok-msg">
           No double-books or can&apos;t-make-it travel flags for people assigned
-          to sessions. Free / boat events stay opt-in until you tap attendees.
+          to sessions. Free events (course or boat-viewable) stay opt-in until
+          you tap attendees.
         </p>
       </section>
     )
@@ -97,8 +94,8 @@ export default function ConflictPanel({ byPerson, onFocus }: Props) {
       <p>
         Overlaps and hops where the gap is shorter than drive + parking
         exit/enter + contingency. Each side shows whether it&apos;s{' '}
-        <strong>ticketed</strong>, <strong>free course</strong>, or{' '}
-        <strong>free w/ boat</strong>. Purchased seats start by sport interest;
+        <strong>ticketed</strong> or <strong>free</strong> (course or
+        boat-viewable). Purchased seats start by sport interest;
         edits on Sessions stick after reload.
       </p>
       <div className="conflict-people">

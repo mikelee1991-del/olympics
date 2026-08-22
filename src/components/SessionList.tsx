@@ -1,5 +1,5 @@
 import { PEOPLE, type PersonId } from '../data/family'
-import { accessLabel } from '../data/access'
+import { accessLabel, isFreeAccess } from '../data/access'
 import {
   formatDisplayDate,
   type PlannedSession,
@@ -45,7 +45,7 @@ export default function SessionList({
         return (
           <article
             key={s.id}
-            className={`session-card status-${s.ticketStatus}${hasConflict ? ' conflicted' : ''}${s.access !== 'ticketed' ? ` access-${s.access}` : ''}`}
+            className={`session-card status-${s.ticketStatus}${hasConflict ? ' conflicted' : ''}${isFreeAccess(s.access) ? ' access-free' : ''}`}
             data-testid={`session-${s.id}`}
             data-access={s.access}
           >
@@ -64,7 +64,7 @@ export default function SessionList({
                   </span>
                   <span className={`kind kind-${s.kind}`}>{s.kind}</span>
                   {s.access !== 'ticketed' ? (
-                    <span className={`access-badge access-${s.access}`}>
+                    <span className="access-badge access-free">
                       {accessLabel(s.access)}
                     </span>
                   ) : (

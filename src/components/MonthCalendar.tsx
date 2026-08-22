@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { PersonId } from '../data/family'
+import { isFreeAccess } from '../data/access'
 import {
   formatDisplayDate,
   type GamesKind,
@@ -94,13 +95,12 @@ function shortSport(sport: string): string {
 type DayBucket = {
   purchased: PlannedSession[]
   free: PlannedSession[]
-  boat: PlannedSession[]
   want: PlannedSession[]
   ceremony: PlannedSession[]
 }
 
 function emptyBucket(): DayBucket {
-  return { purchased: [], free: [], boat: [], want: [], ceremony: [] }
+  return { purchased: [], free: [], want: [], ceremony: [] }
 }
 
 function isPurchased(s: PlannedSession): boolean {
@@ -108,6 +108,11 @@ function isPurchased(s: PlannedSession): boolean {
     s.ticketStatus === 'have' &&
     (s.ticketQty != null || s.access === 'ticketed')
   )
+}
+
+function freeSportLabel(s: PlannedSession): string {
+  const name = shortSport(s.sport)
+  return s.access === 'boat' ? `${name} · boat` : name
 }
 
 function attendeeLine(sessions: PlannedSession[]): string {
@@ -148,8 +153,8 @@ export default function MonthCalendar({
       const cur = map.get(s.date) ?? emptyBucket()
       if (s.kind === 'CEREMONY') cur.ceremony.push(s)
       if (isPurchased(s)) cur.purchased.push(s)
-      else if (s.access === 'free' && s.ticketStatus === 'have') cur.free.push(s)
-      else if (s.access === 'boat') cur.boat.push(s)
+      else if (isFreeAccess(s.access) && s.ticketStatus === 'have')
+        cur.free.push(s)
       else if (s.ticketStatus === 'want') cur.want.push(s)
       else if (s.ticketStatus === 'have') cur.purchased.push(s)
       map.set(s.date, cur)
@@ -327,14 +332,11 @@ export default function MonthCalendar({
               const bucket = byDate.get(cell.iso)
               const purchased = bucket?.purchased ?? []
               const free = bucket?.free ?? []
-              const boat = bucket?.boat ?? []
               const want = bucket?.want ?? []
               const ceremony = bucket?.ceremony ?? []
               const active = selectedDate === cell.iso
               const hasTickets = purchased.length > 0
               const hasFree = free.length > 0
-              const hasBoatOnly =
-                boat.length > 0 && !hasTickets && !hasFree
               const wantList = [...ceremony, ...want]
               const hasWant = wantList.length > 0
 
@@ -344,8 +346,10 @@ export default function MonthCalendar({
               const wantSports = [
                 ...new Set(wantList.map((s) => shortSport(s.sport))),
               ]
+              const freeSports = [...new Set(free.map((s) => freeSportLabel(s)))]
               const ticketPeople = attendeeLine(purchased)
               const wantPeople = attendeeLine(wantList)
+              const freePeople = attendeeLine(free)
 
               let ariaExtra = ''
               if (hasTickets) {
@@ -357,10 +361,8 @@ export default function MonthCalendar({
                 if (wantPeople) ariaExtra += `, want: ${wantPeople}`
               }
               if (hasFree) {
-                ariaExtra += `, free course: ${free.map((s) => shortSport(s.sport)).join(', ')}`
-              }
-              if (hasBoatOnly && !hasTickets && !hasFree && !hasWant) {
-                ariaExtra += ', boat-viewable sessions'
+                ariaExtra += `, free: ${freeSports.join(', ')}`
+                if (freePeople) ariaExtra += `, going: ${freePeople}`
               }
 
               return (
@@ -375,8 +377,7 @@ export default function MonthCalendar({
                     active ? 'active' : '',
                     hasTickets ? 'ticket-day' : '',
                     hasFree && !hasTickets ? 'free-day' : '',
-                    hasBoatOnly ? 'boat-day' : '',
-                    hasWant ? 'want-day-hot' : '',
+                    hasWant && !hasTickets && !hasFree ? 'want-day-hot' : '',
                   ]
                     .filter(Boolean)
                     .join(' ')}
@@ -429,22 +430,22 @@ export default function MonthCalendar({
                       ) : null}
                     </span>
                   ) : null}
-                  {hasFree && !hasTickets ? (
+                  {hasFree ? (
                     <span className="cal-labels">
                       <span className="cal-tag free">FREE</span>
-                      <span className="cal-sport">
-                        {shortSport(free[0].sport)}
-                      </span>
-                      {attendeeLine(free) ? (
-                        <span className="cal-attendees">
-                          {attendeeLine(free)}
+                      {freeSports.slice(0, 2).map((name) => (
+                        <span key={name} className="cal-sport">
+                          {name}
+                        </span>
+                      ))}
+                      {freeSports.length > 2 ? (
+                        <span className="cal-sport more">
+                          +{freeSports.length - 2}
                         </span>
                       ) : null}
-                    </span>
-                  ) : null}
-                  {hasBoatOnly ? (
-                    <span className="cal-labels">
-                      <span className="cal-tag boat">BOAT</span>
+                      {freePeople ? (
+                        <span className="cal-attendees">{freePeople}</span>
+                      ) : null}
                     </span>
                   ) : null}
                 </button>
@@ -463,10 +464,8 @@ export default function MonthCalendar({
           day agenda)
         </span>
         <span>
-          <span className="cal-tag free">FREE</span> course (no ticket needed)
-        </span>
-        <span>
-          <span className="cal-tag boat">BOAT</span> watchable from a boat
+          <span className="cal-tag free">FREE</span> course or boat-viewable
+          (no venue ticket)
         </span>
       </div>
     </section>

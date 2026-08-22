@@ -38,8 +38,13 @@ export function classifyAccess(s: AccessInput): AccessKind {
 
 export function accessLabel(access: AccessKind): string {
   if (access === 'free') return 'Free course'
-  if (access === 'boat') return 'Free w/ boat'
+  if (access === 'boat') return 'Free · boat'
   return 'Ticketed'
+}
+
+/** Course-free and boat-viewable sessions share the free umbrella in the UI. */
+export function isFreeAccess(access: AccessKind): boolean {
+  return access === 'free' || access === 'boat'
 }
 
 export function accessNote(access: AccessKind): string {

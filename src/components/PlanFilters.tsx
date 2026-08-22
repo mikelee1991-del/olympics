@@ -13,7 +13,6 @@ const TICKET_FILTERS: Array<TicketStatus | 'all'> = [
 const ACCESS_FILTERS: Array<AccessKind | 'all'> = [
   'all',
   'free',
-  'boat',
   'ticketed',
 ]
 
@@ -52,7 +51,11 @@ export default function PlanFilters({
             className={plan.accessFilter === a ? 'chip active' : 'chip'}
             onClick={() => plan.setAccessFilter(a)}
           >
-            {a === 'all' ? 'all access' : accessLabel(a)}
+            {a === 'all'
+              ? 'all access'
+              : a === 'free'
+                ? 'free (incl. boat)'
+                : accessLabel(a)}
           </button>
         ))}
       </div>

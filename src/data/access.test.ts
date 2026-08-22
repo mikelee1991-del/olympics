@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classifyAccess, freeOrBoatCodes } from './access'
+import { classifyAccess, freeOrBoatCodes, accessLabel, isFreeAccess } from './access'
 import {
   buildSeedPlan,
   OFFICIAL_SESSIONS,
@@ -58,6 +58,18 @@ describe('classifyAccess', () => {
     expect(
       classifyAccess({ sport: 'Swimming', venue: '2028 Stadium' }),
     ).toBe('ticketed')
+  })
+
+  it('labels boat access under the free umbrella', () => {
+    expect(accessLabel('boat')).toBe('Free · boat')
+  })
+})
+
+describe('isFreeAccess', () => {
+  it('groups course and boat as free', () => {
+    expect(isFreeAccess('free')).toBe(true)
+    expect(isFreeAccess('boat')).toBe(true)
+    expect(isFreeAccess('ticketed')).toBe(false)
   })
 })
 

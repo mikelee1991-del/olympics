@@ -32,7 +32,7 @@ describe('Split planner views', () => {
       screen.getByRole('gridcell', { name: /Jul 25.*have tickets/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('gridcell', { name: /Jul 19.*free course/i }),
+      screen.getByRole('gridcell', { name: /Jul 19.*free:/i }),
     ).toBeInTheDocument()
     expect(screen.getByTestId('para-banner')).toHaveTextContent(
       /No Paralympic tickets yet/i,
