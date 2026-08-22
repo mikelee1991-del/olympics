@@ -418,11 +418,132 @@
   color: var(--text-muted);
 }
 
+.stat-row-split {
+  gap: 0.5rem 1.25rem;
+  font-size: 0.92rem;
+}
+
+.cal-month-block {
+  margin-bottom: 2rem;
+}
+
+.cal-month-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cal-month-head p {
+  margin: 0.35rem 0 0.85rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.cal-attendees {
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--success-text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-attendees.muted {
+  color: var(--text-subtle);
+  font-weight: 600;
+  font-style: italic;
+}
+
+.cal-attendees.want-people {
+  color: var(--gold-text);
+}
+
+.ticket-jump-people {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.ticket-jump-chip.para {
+  border-color: color-mix(in srgb, var(--gold) 55%, transparent);
+  background: color-mix(in srgb, var(--gold-bg) 85%, var(--surface));
+}
+
+.ticket-jump-chip.para.active,
+.ticket-jump-chip.para:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+
+.games-pill {
+  display: inline-block;
+  margin-left: 0.55rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.day-people {
+  margin: 0.5rem 0 0;
+  font-size: 0.92rem;
+  color: var(--snow);
+}
+
+.day-people.muted {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.games-badge {
+  font-size: 0.65rem;
+  vertical-align: middle;
+  border-radius: 999px;
+  padding: 0.12rem 0.4rem;
+  margin-right: 0.25rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.games-badge.games-olympic {
+  background: color-mix(in srgb, var(--ice) 30%, var(--surface-raised));
+  border: 1px solid color-mix(in srgb, var(--ice) 55%, transparent);
+  color: var(--snow);
+}
+
+.games-badge.games-paralympic {
+  background: var(--gold-bg);
+  border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  color: var(--gold-text);
+}
+
+.attendees-label {
+  width: 100%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-subtle);
+  margin-bottom: 0.15rem;
+}
+
 .attendees {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   margin-top: 0.7rem;
+  align-items: center;
 }
 
 .person {
@@ -802,7 +923,7 @@
 }
 
 .cal-cell {
-  min-height: 5.2rem;
+  min-height: 5.6rem;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-muted);

@@ -3,11 +3,7 @@ import MonthCalendar from './MonthCalendar'
 import SessionList from './SessionList'
 import EditModal from './EditModal'
 import type { PlanState } from '../hooks/usePlan'
-import {
-  formatDisplayDate,
-  type GamesKind,
-  type PlannedSession,
-} from '../data/planner'
+import { formatDisplayDate, type PlannedSession } from '../data/planner'
 
 type Props = {
   plan: PlanState
@@ -19,9 +15,14 @@ function agendaRank(s: PlannedSession): number {
   if (s.ticketStatus === 'have' && (s.ticketQty != null || s.access === 'ticketed'))
     return 0
   if (s.ticketStatus === 'have') return 1
-  if (s.access === 'free') return 2
-  if (s.access === 'boat') return 3
-  return 4
+  if (s.ticketStatus === 'want') return 2
+  if (s.access === 'free') return 3
+  if (s.access === 'boat') return 4
+  return 5
+}
+
+function gamesLabel(date: string): string {
+  return date.startsWith('2028-08') ? 'Paralympics' : 'Olympics'
 }
 
 export default function CalendarView({
@@ -29,14 +30,16 @@ export default function CalendarView({
   onOpenSessions,
   onOpenMap,
 }: Props) {
-  const games: GamesKind = plan.gamesFilter
-
-  const scopedSessions = useMemo(
-    () => plan.sessions.filter((s) => (s.games ?? 'olympic') === games),
-    [plan.sessions, games],
+  const olympic = useMemo(
+    () => plan.sessions.filter((s) => (s.games ?? 'olympic') === 'olympic'),
+    [plan.sessions],
+  )
+  const paralympic = useMemo(
+    () => plan.sessions.filter((s) => (s.games ?? 'olympic') === 'paralympic'),
+    [plan.sessions],
   )
 
-  const daySessions = scopedSessions
+  const daySessions = plan.sessions
     .filter((s) => s.date === plan.selectedDate)
     .filter((s) => s.ticketStatus !== 'skip')
     .sort((a, b) => {
@@ -49,24 +52,26 @@ export default function CalendarView({
   const dayPurchased = dayHave.filter(
     (s) => s.ticketQty != null || s.access === 'ticketed',
   )
+  const dayWant = daySessions.filter((s) => s.ticketStatus === 'want')
 
-  // Keep selected date inside the active Games window.
+  const goingToday = [
+    ...new Set(daySessions.flatMap((s) => s.attendees)),
+  ]
+
   useEffect(() => {
-    const inScope = scopedSessions.some((s) => s.date === plan.selectedDate)
+    const inScope = plan.sessions.some((s) => s.date === plan.selectedDate)
     if (inScope) return
     const fallback =
-      games === 'olympic'
-        ? scopedSessions.find(
-            (s) =>
-              s.ticketStatus === 'have' &&
-              (s.ticketQty != null || s.access === 'ticketed'),
-          )?.date ?? '2028-07-14'
-        : scopedSessions.find((s) => s.kind === 'CEREMONY')?.date ??
-          '2028-08-15'
+      plan.sessions.find(
+        (s) =>
+          s.ticketStatus === 'have' &&
+          (s.ticketQty != null || s.access === 'ticketed'),
+      )?.date ??
+      plan.sessions.find((s) => s.kind === 'CEREMONY')?.date ??
+      '2028-07-14'
     plan.setSelectedDate(fallback)
-    // Only re-run when games filter or scoped session set changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [games, scopedSessions])
+  }, [plan.sessions, plan.selectedDate])
 
   return (
     <div className="view calendar-view" data-testid="calendar-view">
@@ -74,39 +79,26 @@ export default function CalendarView({
         <p className="eyebrow">LA 2028 Summer Games</p>
         <h1>Calendar</h1>
         <p className="lede">
-          Olympics in July (your tickets first). Paralympics in August as a
-          planning placeholder — no tickets purchased yet.
+          Olympics (July) and Paralympics (August) together. Green days are
+          tickets you own; gold is wishlist. Assign people on each session in
+          the day agenda below.
         </p>
-        <div className="games-toggle" role="group" aria-label="Games">
-          <button
-            type="button"
-            className={games === 'olympic' ? 'chip active' : 'chip'}
-            data-testid="games-olympic"
-            onClick={() => plan.setGamesFilter('olympic')}
-          >
-            Olympics · July
-          </button>
-          <button
-            type="button"
-            className={games === 'paralympic' ? 'chip active' : 'chip'}
-            data-testid="games-paralympic"
-            onClick={() => plan.setGamesFilter('paralympic')}
-          >
-            Paralympics · August
-          </button>
-        </div>
-        <div className="stat-row">
-          <span data-testid="count-have">
-            {scopedSessions.filter((s) => s.ticketStatus === 'have').length} have
+        <div className="stat-row stat-row-split">
+          <span data-testid="count-have-oly">
+            {olympic.filter((s) => s.ticketStatus === 'have').length} have ·
+            Olympics
           </span>
-          <span data-testid="count-want">
-            {scopedSessions.filter((s) => s.ticketStatus === 'want').length} want
+          <span data-testid="count-want-oly">
+            {olympic.filter((s) => s.ticketStatus === 'want').length} want ·
+            Olympics
           </span>
-          <span data-testid="count-free">
-            {scopedSessions.filter((s) => s.access === 'free').length} free
+          <span data-testid="count-have-para">
+            {paralympic.filter((s) => s.ticketStatus === 'have').length} have ·
+            Paralympics
           </span>
-          <span data-testid="count-boat">
-            {scopedSessions.filter((s) => s.access === 'boat').length} boat
+          <span data-testid="count-want-para">
+            {paralympic.filter((s) => s.ticketStatus === 'want').length} want ·
+            Paralympics
           </span>
         </div>
       </header>
@@ -115,7 +107,6 @@ export default function CalendarView({
         sessions={plan.sessions}
         selectedDate={plan.selectedDate}
         onSelectDate={plan.setSelectedDate}
-        games={games}
       />
 
       <section className="day-agenda" aria-live="polite">
@@ -124,18 +115,32 @@ export default function CalendarView({
             {plan.selectedDate
               ? formatDisplayDate(plan.selectedDate)
               : 'Select a day'}
+            {plan.selectedDate ? (
+              <span className="games-pill">
+                {gamesLabel(plan.selectedDate)}
+              </span>
+            ) : null}
           </h2>
           <p>
             {daySessions.length === 0
               ? 'No active sessions this day.'
               : dayPurchased.length > 0
-                ? `You have tickets for ${dayPurchased.map((s) => s.sport).join(', ')}`
-                : games === 'paralympic'
-                  ? `${daySessions.length} Paralympic session${daySessions.length === 1 ? '' : 's'} (wishlist — no tickets yet)`
+                ? `Tickets: ${dayPurchased.map((s) => s.sport).join(', ')}`
+                : dayWant.length > 0
+                  ? `${dayWant.length} wishlist session${dayWant.length === 1 ? '' : 's'} — assign who wants to go`
                   : dayHave.length > 0
                     ? `${dayHave.length} free/have session${dayHave.length === 1 ? '' : 's'} this day`
-                    : 'Wishlist only — no purchased tickets this day'}
+                    : 'Sessions this day'}
           </p>
+          {goingToday.length > 0 ? (
+            <p className="day-people" data-testid="day-people">
+              <strong>Going:</strong> {goingToday.join(', ')}
+            </p>
+          ) : daySessions.length > 0 ? (
+            <p className="day-people muted" data-testid="day-people">
+              No one assigned yet — toggle names on each session below.
+            </p>
+          ) : null}
         </div>
 
         <div className="agenda-actions">
