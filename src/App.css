@@ -560,6 +560,31 @@ th {
   color: #b8f0c8;
 }
 
+.access-badge.access-ticketed {
+  background: color-mix(in srgb, var(--fog) 28%, transparent);
+  color: color-mix(in srgb, var(--snow) 85%, var(--fog));
+}
+
+.conflict-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.45rem;
+  margin-bottom: 0.35rem;
+}
+
+.conflict-meta .access-badge {
+  margin-left: 0;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 600;
+}
+
+.conflict-vs {
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
 .session-card.access-free {
   border-left: 3px solid #2d8a4e;
   padding-left: 0.75rem;

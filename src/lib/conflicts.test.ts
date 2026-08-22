@@ -183,4 +183,28 @@ describe('findConflicts', () => {
     ]
     expect(findConflicts(sessions)).toHaveLength(0)
   })
+
+  it('ignores free-course sessions until someone is opted in', () => {
+    const sessions = [
+      session({
+        id: 'marathon',
+        sport: 'Athletics',
+        access: 'free',
+        ticketStatus: 'have',
+        date: '2028-07-30',
+        startTime: '07:15',
+        endTime: '11:00',
+        attendees: [],
+      }),
+      session({
+        id: 'swim',
+        sport: 'Swimming',
+        date: '2028-07-30',
+        startTime: '07:15',
+        endTime: '11:00',
+        attendees: ['Mike'],
+      }),
+    ]
+    expect(findConflicts(sessions)).toHaveLength(0)
+  })
 })

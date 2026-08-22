@@ -24,8 +24,9 @@ Standard scripts are in the root `package.json` / `README.md`:
 
 - Package manager is **pnpm** (`pnpm-lock.yaml`). Prefer it over npm/yarn.
 - Watchlist state is stored in browser `localStorage` under key `olympics-watchlist`.
-- Family schedule planner state is under `olympics-planner-v5-para` (Olympic + Paralympic sessions, tickets, attendees, free/boat access, purchased Olympic tickets). Older planner keys are ignored after bumps; Hard reset clears all `olympics-planner-*` keys.
+- Family schedule planner state is under `olympics-planner-v6-alloc` (Olympic + Paralympic sessions, tickets, attendees, free/boat access, purchased Olympic tickets seated by sport interest only). Older planner keys are ignored after bumps; Hard reset clears all `olympics-planner-*` keys.
 - Olympic seed times come from the LA28 **Competition Schedule by Event V4.0** PDF (`src/data/officialSessions.json`). Paralympic seed/placeholder times come from **Paralympic By Event V3.2** (`src/data/paralympicSessions.json`) — all Para seeded sessions start as **want** (no tickets yet). Calendar toggles Olympics · July vs Paralympics · August.
+- Owned tickets (`src/data/ownedTickets.ts`) seat only people who ranked that sport — open seats stay empty. Free / boat sessions start with **no attendees** (opt-in). Conflicts UI labels each side as ticketed / free course / free w/ boat.
 - Conflicts use drive + parking exit/enter + contingency (`src/lib/travel.ts`). Free course events (marathon, race walk, road cycling) and boat-viewable water sports are tagged in `src/data/access.ts`.
 - Venue map uses OpenStreetMap tiles via Leaflet — needs network egress for tiles. Pins live in `src/data/venues.ts` (audited against OSM/Wikipedia; **2028 Stadium = SoFi in Inglewood**, not Exposition Park).
 - Hero imagery on the medal demo tab loads from Unsplash (summer athletics); planner does not depend on it.

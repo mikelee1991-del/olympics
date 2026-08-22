@@ -1,4 +1,4 @@
-import { PEOPLE, interestedPeople, type PersonId } from './family'
+import { interestedPeople, type PersonId } from './family'
 
 /** Tickets the family already purchased (from LA28 ticket portal). */
 export type OwnedTicket = {
@@ -31,20 +31,11 @@ export const OWNED_TICKET_BY_CODE = Object.fromEntries(
   OWNED_TICKETS.map((t) => [t.code, t]),
 ) as Record<string, OwnedTicket>
 
-/** Prefer people who ranked the sport, then fill remaining seats in family order. */
+/** Prefer people who ranked the sport — never pad seats with uninterested people. */
 export function attendeesForOwnedTickets(
   sport: string,
   qty: number,
 ): PersonId[] {
   const ranked = interestedPeople(sport, 99)
-  const out: PersonId[] = []
-  for (const p of ranked) {
-    if (out.length >= qty) break
-    out.push(p)
-  }
-  for (const p of PEOPLE) {
-    if (out.length >= qty) break
-    if (!out.includes(p)) out.push(p)
-  }
-  return out.slice(0, qty)
+  return ranked.slice(0, qty)
 }

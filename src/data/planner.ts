@@ -153,7 +153,10 @@ export function officialToPlanned(
           : 'want',
     attendees: owned
       ? attendeesForOwnedTickets(interestSport, owned.qty)
-      : interestedPeople(interestSport),
+      : // Free / boat: opt-in — don't auto-assign (avoids fake ticket conflicts).
+        access === 'free' || access === 'boat'
+        ? []
+        : interestedPeople(interestSport),
     notes,
     timeEstimated: false,
     sessionCode: s.code,
@@ -261,12 +264,8 @@ export function mergeOwnedTickets(
       ...planned,
       ticketStatus: existing.ticketStatus === 'skip' ? 'skip' : 'have',
       ticketQty: owned.qty,
-      attendees:
-        existing.attendees.length > 0 &&
-        existing.attendees.length <= owned.qty &&
-        existing.ticketStatus === 'have'
-          ? existing.attendees
-          : planned.attendees,
+      // Always re-seat owned tickets by sport interest (don't keep padded seats).
+      attendees: planned.attendees,
     })
   }
 
@@ -304,8 +303,8 @@ export const ALL_SPORTS = [
   ]),
 ].sort()
 
-/** Bump key when Paralympic seed is added. */
-export const PLANNER_STORAGE_KEY = 'olympics-planner-v5-para'
+/** Bump key when owned-ticket seating / free opt-in changes. */
+export const PLANNER_STORAGE_KEY = 'olympics-planner-v6-alloc'
 
 /** Clear every planner key (current + legacy) before a hard reset. */
 export function clearPlannerStorage(): void {
@@ -315,6 +314,7 @@ export function clearPlannerStorage(): void {
     'olympics-planner-v2-official',
     'olympics-planner-v3-access',
     'olympics-planner-v4-owned',
+    'olympics-planner-v5-para',
   ])
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)
