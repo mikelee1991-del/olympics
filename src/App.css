@@ -646,6 +646,7 @@ th {
 }
 
 .map-shell {
+  position: relative;
   height: 320px;
   border-radius: 0.75rem;
   overflow: hidden;
@@ -656,6 +657,60 @@ th {
   width: 100%;
   height: 100%;
   background: #0a1a2a;
+}
+
+.map-legend {
+  position: absolute;
+  z-index: 500;
+  top: 0.75rem;
+  left: 0.75rem;
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, #0a1624 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fog) 30%, transparent);
+  color: var(--snow);
+  font-size: 0.78rem;
+  line-height: 1.2;
+  pointer-events: none;
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 35%, transparent);
+}
+
+.map-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.map-legend-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, #fff 35%, transparent);
+}
+
+.map-legend-swatch.have {
+  background: #2d8a4e;
+}
+
+.map-legend-swatch.active {
+  background: #3eb6d4;
+}
+
+.map-legend-swatch.other {
+  background: #5a6a78;
+  opacity: 0.75;
+}
+
+.map-popup-empty {
+  margin: 0.4rem 0 0;
+  font-size: 0.85em;
+  opacity: 0.85;
 }
 
 .panel {
