@@ -54,6 +54,22 @@ describe('Split planner views', () => {
     ).toBeInTheDocument()
   })
 
+  it('switches to Paralympics August placeholder with no tickets', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByTestId('games-paralympic'))
+    expect(screen.getByTestId('month-calendar')).toHaveTextContent(
+      'August 2028 · Paralympics',
+    )
+    expect(screen.getByTestId('para-banner')).toHaveTextContent(
+      /No Paralympic tickets yet/i,
+    )
+    expect(screen.getByTestId('count-have').textContent).toMatch(/^0 have/)
+    expect(
+      Number.parseInt(screen.getByTestId('count-want').textContent ?? '0', 10),
+    ).toBeGreaterThan(0)
+  })
+
   it('shows have tickets from owned purchases on calendar', () => {
     render(<App />)
     const have = screen.getByTestId('count-have').textContent ?? ''

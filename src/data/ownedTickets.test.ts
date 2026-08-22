@@ -37,6 +37,7 @@ describe('owned tickets', () => {
         timeEstimated: false,
         sessionCode: 'ATH01',
         access: 'ticketed',
+        games: 'olympic',
       },
     ]
     const merged = hydratePlan(thin)

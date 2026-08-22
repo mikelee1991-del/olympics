@@ -47,14 +47,14 @@ Split into focused tabs:
 
 | Tab | Purpose |
 | --- | --- |
-| **Calendar** | July 2028 month grid + day agenda |
+| **Calendar** | Olympics (Jul 14–30) / Paralympics (Aug 13–27) grid + day agenda |
 | **Sessions** | Have / Want / Skip tickets and attendees |
 | **Map** | Venue pins for the selected day |
 | **Conflicts** | Per-person double-books and drive+parking “can’t make it” |
 
-Seed sessions use official LA28 By Event V4.0 clock times (`src/data/officialSessions.json`).
+Seed sessions use official LA28 By Event V4.0 clock times (`src/data/officialSessions.json`) plus Paralympic By Event V3.2 (`src/data/paralympicSessions.json`) as a **want** placeholder (no Para tickets yet).
 **Free** tags = LA28 non-ticketed course events; **Free w/ boat** = open-water sports viewable from a boat.
-State persists in `localStorage` (`olympics-planner-v4-owned`).
+State persists in `localStorage` (`olympics-planner-v5-para`).
 
 ## Medal demo
 

@@ -320,6 +320,22 @@ export const VENUE_ALIASES: Record<string, string> = {
   '(Rifle & Pistol) Long Beach Target Shooting Hall': 'lb-arena',
   '- Final Stages DTLA Arena': 'dtla-arena',
   '- Preliminary Stages Peacock Theater': 'peacock',
+  // Paralympic schedule venue strings
+  'LA Convention Center Hall A': 'lacc',
+  'LA Convention Center Hall B': 'lacc',
+  'LA Convention Center Hall C': 'lacc',
+  'LA Convention Center Hall F': 'lacc',
+  'LA Convention Center Hall G': 'lacc',
+  'LA Convention Center Hall H': 'lacc',
+  'LA Convention Center Hall K': 'lacc',
+  'LA Convention Center Petree Hall': 'lacc',
+  'Long Beach Waterfront': 'alamitos',
+  'The Forum': 'intuit',
+  'Valley Sports Complex': 'valley',
+  'LA84 Foundation Velodrome': 'carson-velo',
+  'LA84 Velodrome': 'carson-velo',
+  'Para Aquatic Center': 'lb-aquatics',
+  'Long Beach Aquatic Center': 'lb-aquatics',
 }
 
 export function resolveVenueId(venueLabel: string): string {

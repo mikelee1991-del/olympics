@@ -64,11 +64,13 @@ describe('classifyAccess', () => {
 describe('official seed plan access', () => {
   it('includes free and boat sessions and tags them', () => {
     const plan = buildSeedPlan()
-    const free = plan.filter((s) => s.access === 'free')
-    const boat = plan.filter((s) => s.access === 'boat')
-    expect(free.length).toBeGreaterThanOrEqual(6) // 3 marathon/walk + 3 road
+    const olympicFree = plan.filter(
+      (s) => s.access === 'free' && s.games === 'olympic',
+    )
+    const boat = plan.filter((s) => s.access === 'boat' && s.games === 'olympic')
+    expect(olympicFree.length).toBeGreaterThanOrEqual(6) // 3 marathon/walk + 3 road
     expect(boat.length).toBeGreaterThanOrEqual(10) // sailing + OWS + surfing + coastal
-    expect(free.every((s) => s.ticketStatus === 'have')).toBe(true)
+    expect(olympicFree.every((s) => s.ticketStatus === 'have')).toBe(true)
     expect(plan.some((s) => s.sport === 'Cycling Road')).toBe(true)
     expect(plan.some((s) => s.sport === 'Sailing')).toBe(true)
   })
