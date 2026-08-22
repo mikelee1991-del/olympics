@@ -184,7 +184,7 @@ export function buildSeedPlan(): PlannedSession[] {
   )
 }
 
-/** Backfill access / games on older saved plans. */
+/** Backfill access / games on older saved plans; re-resolve venue from label. */
 export function withAccess(session: PlannedSession): PlannedSession {
   const access =
     session.access ??
@@ -196,7 +196,8 @@ export function withAccess(session: PlannedSession): PlannedSession {
   const games =
     session.games ??
     (session.date.startsWith('2028-08') ? 'paralympic' : 'olympic')
-  return { ...session, access, games }
+  const venueId = resolveVenueId(session.venueLabel)
+  return { ...session, access, games, venueId }
 }
 
 /**

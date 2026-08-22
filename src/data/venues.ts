@@ -163,9 +163,10 @@ export const VENUES: Venue[] = [
   {
     id: 'alamitos',
     name: 'Alamitos Beach Stadium',
-    lat: 33.755,
-    lng: -118.1319,
+    lat: 33.7625,
+    lng: -118.178,
     area: 'Long Beach',
+    note: 'Temporary LA28 beach volleyball stadium on Alamitos Beach (Shoreline Dr), not Alamitos Bay.',
   },
   {
     id: 'belmont',
@@ -253,7 +254,7 @@ export const VENUES: Venue[] = [
     lat: 35.5248,
     lng: -97.4637,
     area: 'Oklahoma City',
-    note: 'Devon Park (USA Softbal Hall of Fame Complex) — outside LA metro.',
+    note: 'Devon Park (USA Softball Hall of Fame Complex) — outside LA metro.',
   },
   {
     id: 'okc-whitewater',
@@ -372,6 +373,7 @@ export function resolveVenueId(venueLabel: string): string {
   // Fuzzy keywords (more specific first)
   if (/coliseum/.test(lower)) return 'coliseum'
   if (/2028 stadium|aquatics stadium/.test(lower)) return 'stadium-2028'
+  if (/forum/.test(lower)) return 'forum'
   if (/intuit/.test(lower)) return 'intuit'
   if (/dodger/.test(lower)) return 'dodger'
   if (/velodrome/.test(lower)) return 'carson-velo'
