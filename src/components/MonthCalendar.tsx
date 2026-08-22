@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import type { PersonId } from '../data/family'
 import {
   formatDisplayDate,
   type GamesKind,
@@ -9,30 +10,41 @@ type Props = {
   sessions: PlannedSession[]
   selectedDate: string | null
   onSelectDate: (iso: string) => void
-  games: GamesKind
 }
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const WINDOWS: Record<
-  GamesKind,
-  { year: number; month: number; startDay: number; endDay: number; label: string }
-> = {
-  olympic: {
+const MONTH_BLOCKS: Array<{
+  key: string
+  year: number
+  month: number
+  startDay: number
+  endDay: number
+  title: string
+  games: GamesKind
+  blurb: string
+}> = [
+  {
+    key: 'jul',
     year: 2028,
     month: 7,
     startDay: 14,
     endDay: 30,
-    label: 'Olympic Games window',
+    title: 'July 2028 · Olympics',
+    games: 'olympic',
+    blurb: 'Solid green = purchased tickets. Gold = wishlist. Names show who is going.',
   },
-  paralympic: {
+  {
+    key: 'aug',
     year: 2028,
     month: 8,
     startDay: 13,
     endDay: 27,
-    label: 'Paralympic Games window',
+    title: 'August 2028 · Paralympics',
+    games: 'paralympic',
+    blurb: 'Paralympic placeholder — no tickets purchased yet. Mark want and assign people.',
   },
-}
+]
 
 function isoDate(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
@@ -98,21 +110,40 @@ function isPurchased(s: PlannedSession): boolean {
   )
 }
 
+function attendeeLine(sessions: PlannedSession[]): string {
+  const names = [
+    ...new Set(sessions.flatMap((s) => s.attendees)),
+  ] as PersonId[]
+  if (names.length === 0) return ''
+  if (names.length <= 3) return names.join(', ')
+  return `${names.slice(0, 2).join(', ')} +${names.length - 2}`
+}
+
+function buildCells(
+  year: number,
+  month: number,
+  startDay: number,
+  endDay: number,
+): Array<{ day: number | null; iso: string | null }> {
+  const firstIso = isoDate(year, month, startDay)
+  const startPad = new Date(`${firstIso}T12:00:00`).getDay()
+  const out: Array<{ day: number | null; iso: string | null }> = []
+  for (let i = 0; i < startPad; i++) out.push({ day: null, iso: null })
+  for (let d = startDay; d <= endDay; d++) {
+    out.push({ day: d, iso: isoDate(year, month, d) })
+  }
+  while (out.length % 7 !== 0) out.push({ day: null, iso: null })
+  return out
+}
+
 export default function MonthCalendar({
   sessions,
   selectedDate,
   onSelectDate,
-  games,
 }: Props) {
-  const win = WINDOWS[games]
-  const scoped = useMemo(
-    () => sessions.filter((s) => (s.games ?? 'olympic') === games),
-    [sessions, games],
-  )
-
   const byDate = useMemo(() => {
     const map = new Map<string, DayBucket>()
-    for (const s of scoped) {
+    for (const s of sessions) {
       if (s.ticketStatus === 'skip') continue
       const cur = map.get(s.date) ?? emptyBucket()
       if (s.kind === 'CEREMONY') cur.ceremony.push(s)
@@ -124,78 +155,75 @@ export default function MonthCalendar({
       map.set(s.date, cur)
     }
     return map
-  }, [scoped])
+  }, [sessions])
 
   const jumpDays = useMemo(() => {
-    return [...byDate.entries()]
-      .filter(([, b]) =>
-        games === 'olympic'
-          ? b.purchased.length > 0
-          : b.want.length > 0 || b.ceremony.length > 0 || b.free.length > 0,
-      )
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([iso, b]) => {
-        const list =
-          games === 'olympic'
-            ? b.purchased
-            : [...b.ceremony, ...b.want, ...b.free]
-        return {
+    const out: Array<{
+      iso: string
+      games: GamesKind
+      sports: string[]
+      qty: number
+      people: string
+      kind: 'tickets' | 'review'
+    }> = []
+
+    for (const [iso, b] of byDate.entries()) {
+      const games: GamesKind = iso.startsWith('2028-08')
+        ? 'paralympic'
+        : 'olympic'
+      if (b.purchased.length > 0) {
+        out.push({
           iso,
+          games,
+          sports: [...new Set(b.purchased.map((s) => shortSport(s.sport)))].slice(
+            0,
+            3,
+          ),
+          qty: b.purchased.reduce((n, s) => n + (s.ticketQty ?? 1), 0),
+          people: attendeeLine(b.purchased),
+          kind: 'tickets',
+        })
+      } else if (
+        games === 'paralympic' &&
+        (b.want.length > 0 || b.ceremony.length > 0 || b.free.length > 0)
+      ) {
+        const list = [...b.ceremony, ...b.want, ...b.free]
+        out.push({
+          iso,
+          games,
           sports: [...new Set(list.map((s) => shortSport(s.sport)))].slice(0, 3),
-          qty:
-            games === 'olympic'
-              ? b.purchased.reduce((n, s) => n + (s.ticketQty ?? 1), 0)
-              : list.length,
-        }
-      })
-  }, [byDate, games])
-
-  const cells = useMemo(() => {
-    const firstIso = isoDate(win.year, win.month, win.startDay)
-    const startPad = new Date(`${firstIso}T12:00:00`).getDay()
-    const out: Array<{ day: number | null; iso: string | null }> = []
-    for (let i = 0; i < startPad; i++) out.push({ day: null, iso: null })
-    for (let d = win.startDay; d <= win.endDay; d++) {
-      out.push({ day: d, iso: isoDate(win.year, win.month, d) })
+          qty: list.length,
+          people: attendeeLine([...b.want, ...b.ceremony]),
+          kind: 'review',
+        })
+      }
     }
-    while (out.length % 7 !== 0) out.push({ day: null, iso: null })
-    return out
-  }, [win])
 
-  const monthLabel =
-    games === 'olympic' ? 'July 2028 · Olympics' : 'August 2028 · Paralympics'
+    return out.sort((a, b) => a.iso.localeCompare(b.iso))
+  }, [byDate])
+
+  const ticketJumps = jumpDays.filter((d) => d.kind === 'tickets')
+  const reviewJumps = jumpDays.filter((d) => d.kind === 'review')
 
   return (
     <section
       className="month-cal"
       data-testid="month-calendar"
-      aria-label={monthLabel}
+      aria-label="LA 2028 Olympics and Paralympics calendar"
     >
       <header className="month-cal-head">
-        <h2>{monthLabel}</h2>
+        <h2>July &amp; August 2028</h2>
         <p>
-          Showing the {win.label} only (days {win.startDay}–{win.endDay}).{' '}
-          {games === 'olympic'
-            ? 'Solid green days are tickets you already have.'
-            : 'Paralympics placeholder — nothing purchased yet; mark want as you decide.'}
+          Olympics and Paralympics on one calendar. Green = tickets you own;
+          gold = wishlist. Names under each day are who is assigned to go.
         </p>
       </header>
 
-      {games === 'paralympic' ? (
-        <div className="para-banner" data-testid="para-banner">
-          <strong>No Paralympic tickets yet.</strong> Seeded medal/ceremony
-          sessions from LA28 By Event V3.2 so you can plan — all start as{' '}
-          <em>want</em>.
-        </div>
-      ) : null}
-
-      {jumpDays.length > 0 ? (
+      {ticketJumps.length > 0 ? (
         <div className="ticket-jump" data-testid="ticket-jump">
-          <p className="ticket-jump-label">
-            {games === 'olympic' ? 'Your ticket days' : 'Paralympic days to review'}
-          </p>
+          <p className="ticket-jump-label">Your ticket days</p>
           <div className="ticket-jump-list">
-            {jumpDays.map((d) => (
+            {ticketJumps.map((d) => (
               <button
                 key={d.iso}
                 type="button"
@@ -212,144 +240,234 @@ export default function MonthCalendar({
                 <span className="ticket-jump-sports">
                   {d.sports.join(' · ')}
                 </span>
-                <span className="ticket-jump-qty">
-                  {games === 'olympic' ? `${d.qty} tix` : `${d.qty} sessions`}
-                </span>
+                {d.people ? (
+                  <span className="ticket-jump-people">{d.people}</span>
+                ) : null}
+                <span className="ticket-jump-qty">{d.qty} tix</span>
               </button>
             ))}
           </div>
         </div>
       ) : null}
 
-      <div className="cal-weekdays" aria-hidden="true">
-        {WEEKDAYS.map((d) => (
-          <div key={d}>{d}</div>
-        ))}
-      </div>
+      {reviewJumps.length > 0 ? (
+        <div className="ticket-jump para" data-testid="para-jump">
+          <p className="ticket-jump-label">Paralympic days to review</p>
+          <div className="ticket-jump-list">
+            {reviewJumps.map((d) => (
+              <button
+                key={d.iso}
+                type="button"
+                className={
+                  selectedDate === d.iso
+                    ? 'ticket-jump-chip active para'
+                    : 'ticket-jump-chip para'
+                }
+                onClick={() => onSelectDate(d.iso)}
+              >
+                <span className="ticket-jump-date">
+                  {formatDisplayDate(d.iso)}
+                </span>
+                <span className="ticket-jump-sports">
+                  {d.sports.join(' · ')}
+                </span>
+                {d.people ? (
+                  <span className="ticket-jump-people">{d.people}</span>
+                ) : null}
+                <span className="ticket-jump-qty">{d.qty} sessions</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
-      <div className="cal-grid" role="grid" aria-label={monthLabel}>
-        {cells.map((cell, idx) => {
-          if (!cell.iso || cell.day === null) {
-            return <div key={`pad-${idx}`} className="cal-cell empty" />
-          }
-          const bucket = byDate.get(cell.iso)
-          const purchased = bucket?.purchased ?? []
-          const free = bucket?.free ?? []
-          const boat = bucket?.boat ?? []
-          const want = bucket?.want ?? []
-          const ceremony = bucket?.ceremony ?? []
-          const active = selectedDate === cell.iso
-          const hasTickets = purchased.length > 0
-          const hasFree = free.length > 0
-          const hasBoatOnly = boat.length > 0 && !hasTickets && !hasFree
-          const hasWant =
-            games === 'paralympic' &&
-            (want.length > 0 || ceremony.length > 0) &&
-            !hasTickets
+      {MONTH_BLOCKS.map((block) => (
+        <div
+          key={block.key}
+          className="cal-month-block"
+          data-testid={`cal-month-${block.key}`}
+        >
+          <header className="cal-month-head">
+            <h3>{block.title}</h3>
+            <p>{block.blurb}</p>
+          </header>
 
-          const sportLabels = [
-            ...new Set(
-              (hasTickets ? purchased : hasWant ? [...ceremony, ...want] : [])
-                .map((s) => shortSport(s.sport)),
-            ),
-          ]
-          const shown = sportLabels.slice(0, 2)
-          const extra = sportLabels.length - shown.length
+          {block.games === 'paralympic' ? (
+            <div className="para-banner" data-testid="para-banner">
+              <strong>No Paralympic tickets yet.</strong> Seeded sessions start
+              as <em>want</em> — tap a day and assign who wants to go.
+            </div>
+          ) : null}
 
-          let ariaExtra = ''
-          if (hasTickets) ariaExtra = `, have tickets: ${sportLabels.join(', ')}`
-          else if (hasFree)
-            ariaExtra = `, free course: ${free.map((s) => shortSport(s.sport)).join(', ')}`
-          else if (hasWant) ariaExtra = `, wishlist: ${sportLabels.join(', ')}`
-          else if (hasBoatOnly) ariaExtra = ', boat-viewable sessions'
+          <div className="cal-weekdays" aria-hidden="true">
+            {WEEKDAYS.map((d) => (
+              <div key={`${block.key}-${d}`}>{d}</div>
+            ))}
+          </div>
 
-          return (
-            <button
-              key={cell.iso}
-              type="button"
-              role="gridcell"
-              className={[
-                'cal-cell',
-                'games',
-                active ? 'active' : '',
-                hasTickets ? 'ticket-day' : '',
-                hasFree && !hasTickets ? 'free-day' : '',
-                hasBoatOnly ? 'boat-day' : '',
-                hasWant ? 'want-day-hot' : '',
+          <div
+            className="cal-grid"
+            role="grid"
+            aria-label={block.title}
+          >
+            {buildCells(
+              block.year,
+              block.month,
+              block.startDay,
+              block.endDay,
+            ).map((cell, idx) => {
+              if (!cell.iso || cell.day === null) {
+                return (
+                  <div
+                    key={`${block.key}-pad-${idx}`}
+                    className="cal-cell empty"
+                  />
+                )
+              }
+              const bucket = byDate.get(cell.iso)
+              const purchased = bucket?.purchased ?? []
+              const free = bucket?.free ?? []
+              const boat = bucket?.boat ?? []
+              const want = bucket?.want ?? []
+              const ceremony = bucket?.ceremony ?? []
+              const active = selectedDate === cell.iso
+              const hasTickets = purchased.length > 0
+              const hasFree = free.length > 0
+              const hasBoatOnly =
+                boat.length > 0 && !hasTickets && !hasFree
+              const wantList = [...ceremony, ...want]
+              const hasWant = wantList.length > 0 && !hasTickets
+
+              const ticketSports = [
+                ...new Set(purchased.map((s) => shortSport(s.sport))),
               ]
-                .filter(Boolean)
-                .join(' ')}
-              aria-label={`${formatDisplayDate(cell.iso)}${ariaExtra}`}
-              aria-pressed={active}
-              data-have={purchased.length}
-              data-free={free.length}
-              onClick={() => onSelectDate(cell.iso!)}
-            >
-              <span className="cal-daynum">{cell.day}</span>
-              {hasTickets ? (
-                <span className="cal-labels">
-                  <span className="cal-tag have">HAVE</span>
-                  {shown.map((name) => (
-                    <span key={name} className="cal-sport">
-                      {name}
+              const wantSports = [
+                ...new Set(wantList.map((s) => shortSport(s.sport))),
+              ]
+              const ticketPeople = attendeeLine(purchased)
+              const wantPeople = attendeeLine(wantList)
+
+              let ariaExtra = ''
+              if (hasTickets) {
+                ariaExtra += `, have tickets: ${ticketSports.join(', ')}`
+                if (ticketPeople) ariaExtra += `, going: ${ticketPeople}`
+              }
+              if (hasWant) {
+                ariaExtra += `, wishlist: ${wantSports.join(', ')}`
+                if (wantPeople) ariaExtra += `, interested: ${wantPeople}`
+              }
+              if (hasFree) {
+                ariaExtra += `, free course: ${free.map((s) => shortSport(s.sport)).join(', ')}`
+              }
+              if (hasBoatOnly && !hasTickets && !hasFree && !hasWant) {
+                ariaExtra += ', boat-viewable sessions'
+              }
+
+              return (
+                <button
+                  key={cell.iso}
+                  type="button"
+                  role="gridcell"
+                  className={[
+                    'cal-cell',
+                    'games',
+                    block.games === 'paralympic' ? 'para-month' : 'oly-month',
+                    active ? 'active' : '',
+                    hasTickets ? 'ticket-day' : '',
+                    hasFree && !hasTickets ? 'free-day' : '',
+                    hasBoatOnly ? 'boat-day' : '',
+                    hasWant ? 'want-day-hot' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  aria-label={`${formatDisplayDate(cell.iso)}${ariaExtra}`}
+                  aria-pressed={active}
+                  data-have={purchased.length}
+                  data-free={free.length}
+                  onClick={() => onSelectDate(cell.iso!)}
+                >
+                  <span className="cal-daynum">{cell.day}</span>
+                  {hasTickets ? (
+                    <span className="cal-labels">
+                      <span className="cal-tag have">HAVE</span>
+                      {ticketSports.slice(0, 2).map((name) => (
+                        <span key={name} className="cal-sport">
+                          {name}
+                        </span>
+                      ))}
+                      {ticketSports.length > 2 ? (
+                        <span className="cal-sport more">
+                          +{ticketSports.length - 2}
+                        </span>
+                      ) : null}
+                      {ticketPeople ? (
+                        <span className="cal-attendees">{ticketPeople}</span>
+                      ) : (
+                        <span className="cal-attendees muted">
+                          Assign people
+                        </span>
+                      )}
                     </span>
-                  ))}
-                  {extra > 0 ? (
-                    <span className="cal-sport more">+{extra}</span>
                   ) : null}
-                </span>
-              ) : hasFree ? (
-                <span className="cal-labels">
-                  <span className="cal-tag free">FREE</span>
-                  <span className="cal-sport">
-                    {shortSport(free[0].sport)}
-                  </span>
-                </span>
-              ) : hasWant ? (
-                <span className="cal-labels">
-                  <span className="cal-tag want">WANT</span>
-                  {shown.map((name) => (
-                    <span key={name} className="cal-sport">
-                      {name}
+                  {hasWant ? (
+                    <span className="cal-labels">
+                      <span className="cal-tag want">WANT</span>
+                      {wantSports.slice(0, 2).map((name) => (
+                        <span key={name} className="cal-sport">
+                          {name}
+                        </span>
+                      ))}
+                      {wantSports.length > 2 ? (
+                        <span className="cal-sport more">
+                          +{wantSports.length - 2}
+                        </span>
+                      ) : null}
+                      {wantPeople ? (
+                        <span className="cal-attendees want-people">
+                          {wantPeople}
+                        </span>
+                      ) : null}
                     </span>
-                  ))}
-                  {extra > 0 ? (
-                    <span className="cal-sport more">+{extra}</span>
                   ) : null}
-                </span>
-              ) : hasBoatOnly ? (
-                <span className="cal-labels">
-                  <span className="cal-tag boat">BOAT</span>
-                </span>
-              ) : null}
-            </button>
-          )
-        })}
-      </div>
+                  {hasFree && !hasTickets ? (
+                    <span className="cal-labels">
+                      <span className="cal-tag free">FREE</span>
+                      <span className="cal-sport">
+                        {shortSport(free[0].sport)}
+                      </span>
+                      {attendeeLine(free) ? (
+                        <span className="cal-attendees">
+                          {attendeeLine(free)}
+                        </span>
+                      ) : null}
+                    </span>
+                  ) : null}
+                  {hasBoatOnly ? (
+                    <span className="cal-labels">
+                      <span className="cal-tag boat">BOAT</span>
+                    </span>
+                  ) : null}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
 
       <div className="cal-legend">
-        {games === 'olympic' ? (
-          <>
-            <span>
-              <span className="cal-tag have">HAVE</span> tickets purchased
-            </span>
-            <span>
-              <span className="cal-tag free">FREE</span> course (no ticket needed)
-            </span>
-            <span>
-              <span className="cal-tag boat">BOAT</span> watchable from a boat
-            </span>
-          </>
-        ) : (
-          <>
-            <span>
-              <span className="cal-tag want">WANT</span> no tickets yet
-            </span>
-            <span>
-              <span className="cal-tag free">FREE</span> likely course events
-            </span>
-          </>
-        )}
+        <span>
+          <span className="cal-tag have">HAVE</span> tickets purchased
+        </span>
+        <span>
+          <span className="cal-tag want">WANT</span> wishlist (assign people in
+          day agenda)
+        </span>
+        <span>
+          <span className="cal-tag free">FREE</span> course (no ticket needed)
+        </span>
+        <span>
+          <span className="cal-tag boat">BOAT</span> watchable from a boat
+        </span>
       </div>
     </section>
   )

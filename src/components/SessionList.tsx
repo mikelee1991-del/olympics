@@ -57,6 +57,11 @@ export default function SessionList({
                 </p>
                 <h3>
                   {s.sport}{' '}
+                  <span
+                    className={`games-badge games-${s.games ?? 'olympic'}`}
+                  >
+                    {(s.games ?? 'olympic') === 'paralympic' ? 'Para' : 'Oly'}
+                  </span>
                   <span className={`kind kind-${s.kind}`}>{s.kind}</span>
                   {s.access !== 'ticketed' ? (
                     <span className={`access-badge access-${s.access}`}>
@@ -100,6 +105,13 @@ export default function SessionList({
             </div>
 
             <div className="attendees">
+              <span className="attendees-label">
+                {s.ticketStatus === 'have'
+                  ? s.ticketQty
+                    ? 'Seats'
+                    : 'Going'
+                  : 'Want to go'}
+              </span>
               {PEOPLE.map((p) => (
                 <button
                   key={p}

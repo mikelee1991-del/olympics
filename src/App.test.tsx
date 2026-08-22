@@ -13,41 +13,49 @@ describe('Split planner views', () => {
     cleanup()
   })
 
-  it('shows a July 2028 calendar by default', () => {
+  it('shows Olympics and Paralympics on one calendar', () => {
     render(<App />)
     expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
-    expect(screen.getByTestId('month-calendar')).toHaveTextContent('July 2028')
+    const cal = screen.getByTestId('month-calendar')
+    expect(cal).toHaveTextContent('July & August 2028')
+    expect(screen.getByTestId('cal-month-jul')).toHaveTextContent(
+      'July 2028 · Olympics',
+    )
+    expect(screen.getByTestId('cal-month-aug')).toHaveTextContent(
+      'August 2028 · Paralympics',
+    )
     expect(screen.getByTestId('ticket-jump')).toBeInTheDocument()
-    expect(screen.getByTestId('ticket-jump')).toHaveTextContent(/Archery|Handball|Canoe/i)
+    expect(screen.getByTestId('ticket-jump')).toHaveTextContent(
+      /Archery|Handball|Canoe/i,
+    )
     expect(
       screen.getByRole('gridcell', { name: /Jul 25.*have tickets/i }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('gridcell', { name: /Jul 19.*free course/i }),
     ).toBeInTheDocument()
-  })
-
-  it('switches to Paralympics August placeholder with no tickets', async () => {
-    const user = userEvent.setup()
-    render(<App />)
-    await user.click(screen.getByTestId('games-paralympic'))
-    expect(screen.getByTestId('month-calendar')).toHaveTextContent(
-      'August 2028 · Paralympics',
-    )
     expect(screen.getByTestId('para-banner')).toHaveTextContent(
       /No Paralympic tickets yet/i,
     )
-    expect(screen.getByTestId('count-have').textContent).toMatch(/^0 have/)
-    expect(
-      Number.parseInt(screen.getByTestId('count-want').textContent ?? '0', 10),
-    ).toBeGreaterThan(0)
+    expect(screen.getByTestId('count-want-para').textContent).toMatch(/\d+ want/)
   })
 
-  it('shows have tickets from owned purchases on calendar', () => {
+  it('shows combined ticket and want counts for both games', () => {
     render(<App />)
-    const have = screen.getByTestId('count-have').textContent ?? ''
-    // Owned ARC10/HBL42/CSP04 + free course events
-    expect(Number.parseInt(have, 10)).toBeGreaterThanOrEqual(3)
+    expect(
+      Number.parseInt(
+        screen.getByTestId('count-have-oly').textContent?.match(/\d+/)?.[0] ??
+          '0',
+        10,
+      ),
+    ).toBeGreaterThanOrEqual(3)
+    expect(
+      Number.parseInt(
+        screen.getByTestId('count-want-para').textContent?.match(/\d+/)?.[0] ??
+          '0',
+        10,
+      ),
+    ).toBeGreaterThan(0)
   })
 
   it('opens sessions view and toggles ticket status', async () => {
