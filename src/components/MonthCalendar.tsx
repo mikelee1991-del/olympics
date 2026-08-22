@@ -18,13 +18,41 @@ function isoDate(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-type DayStats = {
-  have: number
-  want: number
-  skip: number
-  free: number
-  boat: number
-  total: number
+/** Compact labels that fit in a calendar cell. */
+function shortSport(sport: string): string {
+  const aliases: Record<string, string> = {
+    'Canoe Sprint': 'Canoe',
+    'Artistic Gymnastics': 'Gymnastics',
+    'Trampoline Gymnastics': 'Trampoline',
+    'Cycling Track': 'Track',
+    'Cycling Road': 'Road race',
+    'Beach Volleyball': 'Beach VB',
+    'Open Water Swimming': 'Open water',
+    'Rowing Coastal Beach Sprints': 'Coastal row',
+    'Modern Pentathlon': 'Pentathlon',
+    'Rugby Sevens': 'Rugby',
+    'Water Polo': 'Water polo',
+    'Table Tennis': 'Table tennis',
+  }
+  return aliases[sport] ?? sport
+}
+
+type DayBucket = {
+  purchased: PlannedSession[]
+  free: PlannedSession[]
+  boat: PlannedSession[]
+  want: PlannedSession[]
+}
+
+function emptyBucket(): DayBucket {
+  return { purchased: [], free: [], boat: [], want: [] }
+}
+
+function isPurchased(s: PlannedSession): boolean {
+  return (
+    s.ticketStatus === 'have' &&
+    (s.ticketQty != null || s.access === 'ticketed')
+  )
 }
 
 export default function MonthCalendar({
@@ -35,28 +63,34 @@ export default function MonthCalendar({
   month = 7,
 }: Props) {
   const byDate = useMemo(() => {
-    const map = new Map<string, DayStats>()
+    const map = new Map<string, DayBucket>()
     for (const s of sessions) {
-      const cur = map.get(s.date) ?? {
-        have: 0,
-        want: 0,
-        skip: 0,
-        free: 0,
-        boat: 0,
-        total: 0,
-      }
-      cur.total += 1
-      cur[s.ticketStatus] += 1
-      if (s.access === 'free') cur.free += 1
-      if (s.access === 'boat') cur.boat += 1
+      if (s.ticketStatus === 'skip') continue
+      const cur = map.get(s.date) ?? emptyBucket()
+      if (isPurchased(s)) cur.purchased.push(s)
+      else if (s.access === 'free' && s.ticketStatus === 'have') cur.free.push(s)
+      else if (s.access === 'boat') cur.boat.push(s)
+      else if (s.ticketStatus === 'want') cur.want.push(s)
+      else if (s.ticketStatus === 'have') cur.purchased.push(s)
       map.set(s.date, cur)
     }
     return map
   }, [sessions])
 
+  const ticketDays = useMemo(() => {
+    return [...byDate.entries()]
+      .filter(([, b]) => b.purchased.length > 0)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([iso, b]) => ({
+        iso,
+        sports: [...new Set(b.purchased.map((s) => shortSport(s.sport)))],
+        qty: b.purchased.reduce((n, s) => n + (s.ticketQty ?? 1), 0),
+      }))
+  }, [byDate])
+
   const cells = useMemo(() => {
     const first = new Date(year, month - 1, 1)
-    const startPad = first.getDay() // 0 = Sunday
+    const startPad = first.getDay()
     const daysInMonth = new Date(year, month, 0).getDate()
     const out: Array<{ day: number | null; iso: string | null }> = []
     for (let i = 0; i < startPad; i++) out.push({ day: null, iso: null })
@@ -73,11 +107,46 @@ export default function MonthCalendar({
   })
 
   return (
-    <section className="month-cal" data-testid="month-calendar" aria-label={monthLabel}>
+    <section
+      className="month-cal"
+      data-testid="month-calendar"
+      aria-label={monthLabel}
+    >
       <header className="month-cal-head">
         <h2>{monthLabel}</h2>
-        <p>LA 2028 Summer Games · click a day for that agenda</p>
+        <p>
+          Solid green days are tickets you already have. Free course days are
+          labeled FREE. Everything else stays quiet.
+        </p>
       </header>
+
+      {ticketDays.length > 0 ? (
+        <div className="ticket-jump" data-testid="ticket-jump">
+          <p className="ticket-jump-label">Your ticket days</p>
+          <div className="ticket-jump-list">
+            {ticketDays.map((d) => (
+              <button
+                key={d.iso}
+                type="button"
+                className={
+                  selectedDate === d.iso
+                    ? 'ticket-jump-chip active'
+                    : 'ticket-jump-chip'
+                }
+                onClick={() => onSelectDate(d.iso)}
+              >
+                <span className="ticket-jump-date">
+                  {formatDisplayDate(d.iso)}
+                </span>
+                <span className="ticket-jump-sports">
+                  {d.sports.join(' · ')}
+                </span>
+                <span className="ticket-jump-qty">{d.qty} tix</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="cal-weekdays" aria-hidden="true">
         {WEEKDAYS.map((d) => (
@@ -90,39 +159,80 @@ export default function MonthCalendar({
           if (!cell.iso || cell.day === null) {
             return <div key={`pad-${idx}`} className="cal-cell empty" />
           }
-          const stats = byDate.get(cell.iso)
+          const bucket = byDate.get(cell.iso)
+          const purchased = bucket?.purchased ?? []
+          const free = bucket?.free ?? []
+          const boat = bucket?.boat ?? []
+          const want = bucket?.want ?? []
           const active = selectedDate === cell.iso
           const inGames = cell.day >= 10 && cell.day <= 30
-          const freeBoatBits = [
-            stats?.free ? `${stats.free} free` : null,
-            stats?.boat ? `${stats.boat} boat` : null,
+          const hasTickets = purchased.length > 0
+          const hasFree = free.length > 0
+          const hasBoatOnly = boat.length > 0 && !hasTickets && !hasFree
+          const quietWant = want.length > 0 && !hasTickets && !hasFree
+
+          const sportLabels = [
+            ...new Set(purchased.map((s) => shortSport(s.sport))),
           ]
-            .filter(Boolean)
-            .join(', ')
+          const shown = sportLabels.slice(0, 2)
+          const extra = sportLabels.length - shown.length
+
+          let ariaExtra = ''
+          if (hasTickets) {
+            ariaExtra = `, have tickets: ${sportLabels.join(', ')}`
+          } else if (hasFree) {
+            ariaExtra = `, free course: ${free.map((s) => shortSport(s.sport)).join(', ')}`
+          } else if (hasBoatOnly) {
+            ariaExtra = ', boat-viewable sessions'
+          }
+
           return (
             <button
               key={cell.iso}
               type="button"
               role="gridcell"
-              className={`cal-cell${active ? ' active' : ''}${stats ? ' has-events' : ''}${inGames ? ' games' : ''}${stats && stats.free > 0 ? ' has-free' : ''}${stats && stats.boat > 0 ? ' has-boat' : ''}`}
-              aria-label={`${formatDisplayDate(cell.iso)}${stats ? `, ${stats.total} sessions${freeBoatBits ? ` (${freeBoatBits})` : ''}` : ''}`}
+              className={[
+                'cal-cell',
+                active ? 'active' : '',
+                inGames ? 'games' : '',
+                hasTickets ? 'ticket-day' : '',
+                hasFree && !hasTickets ? 'free-day' : '',
+                hasBoatOnly ? 'boat-day' : '',
+                quietWant ? 'want-day' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              aria-label={`${formatDisplayDate(cell.iso)}${ariaExtra}`}
               aria-pressed={active}
-              data-free={stats?.free ?? 0}
-              data-boat={stats?.boat ?? 0}
+              data-have={purchased.length}
+              data-free={free.length}
               onClick={() => onSelectDate(cell.iso!)}
             >
               <span className="cal-daynum">{cell.day}</span>
-              {stats ? (
-                <span className="cal-dots" aria-hidden="true">
-                  {stats.free > 0 ? <i className="dot free" title="Free" /> : null}
-                  {stats.boat > 0 ? <i className="dot boat" title="Boat" /> : null}
-                  {stats.have > stats.free ? <i className="dot have" /> : null}
-                  {stats.want > stats.boat ? <i className="dot want" /> : null}
-                  <span className="cal-count">{stats.total}</span>
+              {hasTickets ? (
+                <span className="cal-labels">
+                  <span className="cal-tag have">HAVE</span>
+                  {shown.map((name) => (
+                    <span key={name} className="cal-sport">
+                      {name}
+                    </span>
+                  ))}
+                  {extra > 0 ? (
+                    <span className="cal-sport more">+{extra}</span>
+                  ) : null}
                 </span>
-              ) : (
-                <span className="cal-dots muted">—</span>
-              )}
+              ) : hasFree ? (
+                <span className="cal-labels">
+                  <span className="cal-tag free">FREE</span>
+                  <span className="cal-sport">
+                    {shortSport(free[0].sport)}
+                  </span>
+                </span>
+              ) : hasBoatOnly ? (
+                <span className="cal-labels">
+                  <span className="cal-tag boat">BOAT</span>
+                </span>
+              ) : null}
             </button>
           )
         })}
@@ -130,18 +240,14 @@ export default function MonthCalendar({
 
       <div className="cal-legend">
         <span>
-          <i className="dot free" /> free (course)
+          <span className="cal-tag have">HAVE</span> tickets purchased
         </span>
         <span>
-          <i className="dot boat" /> free w/ boat
+          <span className="cal-tag free">FREE</span> course (no ticket needed)
         </span>
         <span>
-          <i className="dot have" /> have tickets
+          <span className="cal-tag boat">BOAT</span> watchable from a boat
         </span>
-        <span>
-          <i className="dot want" /> want tickets
-        </span>
-        <span>Number = sessions that day</span>
       </div>
     </section>
   )

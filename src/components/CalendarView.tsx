@@ -10,10 +10,13 @@ type Props = {
   onOpenMap: () => void
 }
 
-function accessRank(s: PlannedSession): number {
-  if (s.access === 'free') return 0
-  if (s.access === 'boat') return 1
-  return 2
+function agendaRank(s: PlannedSession): number {
+  if (s.ticketStatus === 'have' && (s.ticketQty != null || s.access === 'ticketed'))
+    return 0
+  if (s.ticketStatus === 'have') return 1
+  if (s.access === 'free') return 2
+  if (s.access === 'boat') return 3
+  return 4
 }
 
 export default function CalendarView({
@@ -25,13 +28,15 @@ export default function CalendarView({
     .filter((s) => s.date === plan.selectedDate)
     .filter((s) => s.ticketStatus !== 'skip')
     .sort((a, b) => {
-      const byAccess = accessRank(a) - accessRank(b)
-      if (byAccess !== 0) return byAccess
+      const byRank = agendaRank(a) - agendaRank(b)
+      if (byRank !== 0) return byRank
       return a.startTime.localeCompare(b.startTime)
     })
 
-  const dayFree = daySessions.filter((s) => s.access === 'free').length
-  const dayBoat = daySessions.filter((s) => s.access === 'boat').length
+  const dayHave = daySessions.filter((s) => s.ticketStatus === 'have')
+  const dayPurchased = dayHave.filter(
+    (s) => s.ticketQty != null || s.access === 'ticketed',
+  )
 
   return (
     <div className="view calendar-view" data-testid="calendar-view">
@@ -39,9 +44,8 @@ export default function CalendarView({
         <p className="eyebrow">LA 2028 Summer Olympics</p>
         <h1>July calendar</h1>
         <p className="lede">
-          Pick a day to see that agenda. Green/blue dots mark{' '}
-          <strong>free course</strong> and <strong>boat-viewable</strong>{' '}
-          sessions. Times come from the LA28 official By Event schedule.
+          Green <strong>HAVE</strong> days are tickets you already bought. Jump
+          from the list under the title, or tap a day for the agenda.
         </p>
         <div className="stat-row">
           <span data-testid="count-have">{plan.counts.have} have</span>
@@ -73,7 +77,11 @@ export default function CalendarView({
           <p>
             {daySessions.length === 0
               ? 'No active sessions this day.'
-              : `${daySessions.length} session${daySessions.length === 1 ? '' : 's'}${dayFree || dayBoat ? ` · ${dayFree} free · ${dayBoat} boat` : ''} (skipped hidden)`}
+              : dayPurchased.length > 0
+                ? `You have tickets for ${dayPurchased.map((s) => s.sport).join(', ')}`
+                : dayHave.length > 0
+                  ? `${dayHave.length} free/have session${dayHave.length === 1 ? '' : 's'} this day`
+                  : 'Wishlist only — no purchased tickets this day'}
           </p>
         </div>
 

@@ -44,13 +44,13 @@ describe('Split planner views', () => {
     render(<App />)
     expect(screen.getByTestId('calendar-view')).toBeInTheDocument()
     expect(screen.getByTestId('month-calendar')).toHaveTextContent('July 2028')
-    expect(screen.getByTestId('count-free')).toHaveTextContent(/free/)
-    expect(screen.getByTestId('count-boat')).toHaveTextContent(/boat/)
+    expect(screen.getByTestId('ticket-jump')).toBeInTheDocument()
+    expect(screen.getByTestId('ticket-jump')).toHaveTextContent(/Archery|Handball|Canoe/i)
     expect(
-      screen.getByRole('gridcell', { name: /Jul 19.*free/i }),
+      screen.getByRole('gridcell', { name: /Jul 25.*have tickets/i }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('gridcell', { name: /Jul 15.*boat/i }),
+      screen.getByRole('gridcell', { name: /Jul 19.*free course/i }),
     ).toBeInTheDocument()
   })
 
