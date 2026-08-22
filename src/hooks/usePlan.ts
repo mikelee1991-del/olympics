@@ -25,13 +25,29 @@ function loadPlan(): PlannedSession[] {
   }
 }
 
+function firstPurchasedDay(sessions: PlannedSession[]): string {
+  const days = sessions
+    .filter(
+      (s) =>
+        s.ticketStatus === 'have' &&
+        (s.ticketQty != null || s.access === 'ticketed'),
+    )
+    .map((s) => s.date)
+    .sort()
+  return days[0] ?? '2028-07-14'
+}
+
 function savePlan(sessions: PlannedSession[]) {
   localStorage.setItem(PLANNER_STORAGE_KEY, JSON.stringify(sessions))
 }
 
 export function usePlan() {
-  const [sessions, setSessions] = useState<PlannedSession[]>(loadPlan)
-  const [selectedDate, setSelectedDate] = useState<string | null>('2028-07-14')
+  const boot = useMemo(() => {
+    const plan = loadPlan()
+    return { plan, day: firstPurchasedDay(plan) }
+  }, [])
+  const [sessions, setSessions] = useState<PlannedSession[]>(boot.plan)
+  const [selectedDate, setSelectedDate] = useState<string | null>(boot.day)
   const [ticketFilter, setTicketFilter] = useState<TicketStatus | 'all'>('all')
   const [accessFilter, setAccessFilter] = useState<AccessKind | 'all'>('all')
   const [personFilter, setPersonFilter] = useState<PersonId | 'all'>('all')
