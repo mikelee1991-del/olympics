@@ -10,14 +10,25 @@ describe('owned tickets', () => {
       expect(s, owned.code).toBeTruthy()
       expect(s!.ticketStatus).toBe('have')
       expect(s!.ticketQty).toBe(owned.qty)
-      expect(s!.attendees).toHaveLength(owned.qty)
+      expect(s!.attendees.length).toBeLessThanOrEqual(owned.qty)
+      expect(s!.attendees.length).toBeGreaterThan(0)
+      expect(s!.attendees).toEqual(
+        attendeesForOwnedTickets(s!.sport, owned.qty),
+      )
     }
   })
 
-  it('picks interested attendees up to seat count', () => {
+  it('picks interested attendees up to seat count (no padding)', () => {
     const canoe = attendeesForOwnedTickets('Canoe Sprint', 5)
     expect(canoe).toHaveLength(5)
     expect(canoe).toContain('Mike')
+
+    const archery = attendeesForOwnedTickets('Archery', 4)
+    expect(archery).toEqual(['Jason'])
+    expect(archery).not.toContain('Mike')
+
+    const handball = attendeesForOwnedTickets('Handball', 3)
+    expect(handball).toEqual(['Jason', 'Elle'])
   })
 
   it('merges owned tickets into an older saved plan', () => {

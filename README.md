@@ -54,7 +54,7 @@ Split into focused tabs:
 
 Seed sessions use official LA28 By Event V4.0 clock times (`src/data/officialSessions.json`) plus Paralympic By Event V3.2 (`src/data/paralympicSessions.json`) as a **want** placeholder (no Para tickets yet).
 **Free** tags = LA28 non-ticketed course events; **Free w/ boat** = open-water sports viewable from a boat.
-State persists in `localStorage` (`olympics-planner-v5-para`).
+State persists in `localStorage` (`olympics-planner-v6-alloc`).
 
 ## Medal demo
 

@@ -71,6 +71,8 @@ describe('official seed plan access', () => {
     expect(olympicFree.length).toBeGreaterThanOrEqual(6) // 3 marathon/walk + 3 road
     expect(boat.length).toBeGreaterThanOrEqual(10) // sailing + OWS + surfing + coastal
     expect(olympicFree.every((s) => s.ticketStatus === 'have')).toBe(true)
+    expect(olympicFree.every((s) => s.attendees.length === 0)).toBe(true)
+    expect(boat.every((s) => s.attendees.length === 0)).toBe(true)
     expect(plan.some((s) => s.sport === 'Cycling Road')).toBe(true)
     expect(plan.some((s) => s.sport === 'Sailing')).toBe(true)
   })

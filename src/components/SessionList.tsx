@@ -62,10 +62,14 @@ export default function SessionList({
                     <span className={`access-badge access-${s.access}`}>
                       {accessLabel(s.access)}
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="access-badge access-ticketed">
+                      Ticketed
+                    </span>
+                  )}
                   {s.ticketQty ? (
                     <span className="access-badge access-qty">
-                      {s.ticketQty} tix
+                      {s.attendees.length}/{s.ticketQty} seats
                     </span>
                   ) : null}
                 </h3>
