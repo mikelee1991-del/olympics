@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { VENUE_BY_ID, VENUES } from './venues'
+import { hydratePlan, type PlannedSession } from './planner'
+import { resolveVenueId, VENUE_BY_ID, VENUES } from './venues'
 
 function haversineKm(
   lat1: number,
@@ -63,6 +64,56 @@ describe('venue GPS sanity', () => {
     // Devon Park ~35.525, -97.464
     expect(soft.lat).toBeGreaterThan(35.51)
     expect(soft.lng).toBeGreaterThan(-97.48)
+    expect(soft.note).toMatch(/USA Softball/)
+  })
+
+  it('keeps Kia Forum distinct from Intuit Dome in Inglewood', () => {
+    const forum = VENUE_BY_ID.forum
+    const intuit = VENUE_BY_ID.intuit
+    expect(forum).toBeTruthy()
+    expect(forum.area).toMatch(/Inglewood/i)
+    const km = haversineKm(forum.lat, forum.lng, intuit.lat, intuit.lng)
+    expect(km).toBeGreaterThan(0.8)
+    expect(km).toBeLessThan(2.5)
+    expect(forum.id).not.toBe(intuit.id)
+  })
+
+  it('resolves Forum labels to forum id', () => {
+    expect(resolveVenueId('The Forum')).toBe('forum')
+    expect(resolveVenueId('Kia Forum')).toBe('forum')
+  })
+
+  it('remaps saved Forum sessions off intuit during hydratePlan', () => {
+    const saved: PlannedSession[] = [
+      {
+        id: 'para-pco01',
+        sport: 'Ceremonies',
+        venueLabel: 'The Forum',
+        venueId: 'intuit',
+        date: '2028-08-15',
+        startTime: '19:00',
+        endTime: '22:00',
+        kind: 'CEREMONY',
+        ticketStatus: 'want',
+        attendees: [],
+        notes: 'old pin',
+        timeEstimated: false,
+        sessionCode: 'PCO01',
+        access: 'ticketed',
+        games: 'paralympic',
+      },
+    ]
+    const hydrated = hydratePlan(saved)
+    const forum = hydrated.find((s) => s.venueLabel === 'The Forum')
+    expect(forum?.venueId).toBe('forum')
+    expect(forum?.notes).toBe('old pin')
+  })
+
+  it('places Alamitos Beach Stadium on the western Alamitos Beach shore', () => {
+    const alamitos = VENUE_BY_ID.alamitos
+    expect(alamitos.lat).toBeGreaterThan(33.76)
+    expect(alamitos.lng).toBeLessThan(-118.14)
+    expect(alamitos.note).toMatch(/Alamitos Beach/i)
   })
 
   it('keeps every pin within a plausible bounding box for its area', () => {
