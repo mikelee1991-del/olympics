@@ -83,9 +83,11 @@ describe('Split planner views', () => {
     render(<App />)
 
     const nav = screen.getByRole('navigation', { name: 'Primary' })
-    expect(
-      within(nav).queryByRole('button', { name: 'Medal demo' }),
-    ).not.toBeInTheDocument()
+    for (const label of ['Calendar', 'Sessions', 'Map', 'Conflicts']) {
+      expect(
+        within(nav).getByRole('button', { name: label }),
+      ).toBeInTheDocument()
+    }
 
     await user.click(within(nav).getByRole('button', { name: 'Map' }))
     expect(screen.getByTestId('map-view')).toBeInTheDocument()
