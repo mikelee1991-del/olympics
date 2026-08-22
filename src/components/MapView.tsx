@@ -10,9 +10,12 @@ export default function MapView({ plan }: { plan: PlanState }) {
         <p className="eyebrow">Venues</p>
         <h1>Map</h1>
         <p className="lede">
+          All venues stay on the map. Day filter highlights where you have
+          sessions
           {plan.selectedDate
-            ? `Showing venues for ${formatDisplayDate(plan.selectedDate)}.`
-            : 'Showing all active venues. Pick a day to narrow the pins.'}
+            ? ` on ${formatDisplayDate(plan.selectedDate)}`
+            : ''}
+          ; muted pins are everything else.
         </p>
       </header>
 

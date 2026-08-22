@@ -113,6 +113,9 @@ describe('Split planner views', () => {
     await user.click(within(nav).getByRole('button', { name: 'Map' }))
     expect(screen.getByTestId('map-view')).toBeInTheDocument()
     expect(screen.getByTestId('venue-map')).toBeInTheDocument()
+    const legend = screen.getByTestId('map-legend')
+    expect(legend).toHaveTextContent(/Have tickets/i)
+    expect(legend).toHaveTextContent(/Other venues|No sessions yet/i)
 
     await user.click(within(nav).getByRole('button', { name: 'Conflicts' }))
     expect(screen.getByTestId('conflicts-view')).toBeInTheDocument()
