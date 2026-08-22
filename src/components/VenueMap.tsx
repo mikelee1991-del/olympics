@@ -123,15 +123,19 @@ export default function VenueMap({
   const legendDay = Boolean(selectedDate)
 
   return (
-    <div className="map-shell" data-testid="venue-map">
+    <div
+      className="map-shell"
+      data-testid="venue-map"
+      data-pin-count={pins.length}
+    >
       <ul className="map-legend" data-testid="map-legend" aria-label="Map legend">
         <li>
           <span className="map-legend-swatch have" aria-hidden />
-          Have tickets{legendDay ? ' today' : ''}
+          Have tickets{legendDay ? ' this day' : ''}
         </li>
         <li>
           <span className="map-legend-swatch active" aria-hidden />
-          {legendDay ? 'Sessions today' : 'On your plan'}
+          {legendDay ? 'Sessions this day' : 'On your plan'}
         </li>
         <li>
           <span className="map-legend-swatch other" aria-hidden />

@@ -93,6 +93,11 @@ describe('Split planner views', () => {
     const legend = screen.getByTestId('map-legend')
     expect(legend).toHaveTextContent(/Have tickets/i)
     expect(legend).toHaveTextContent(/Other venues|No sessions yet/i)
+    expect(legend.textContent?.toLowerCase()).not.toContain('today')
+    expect(screen.getByTestId('venue-map')).toHaveAttribute(
+      'data-pin-count',
+      expect.stringMatching(/^\d+$/),
+    )
 
     await user.click(within(nav).getByRole('button', { name: 'Conflicts' }))
     expect(screen.getByTestId('conflicts-view')).toBeInTheDocument()
