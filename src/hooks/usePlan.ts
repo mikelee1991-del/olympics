@@ -135,8 +135,9 @@ export function usePlan() {
       )
     )
       return
-    updateSessions(buildSeedPlan())
-    setSelectedDate('2028-07-14')
+    const next = buildSeedPlan()
+    updateSessions(next)
+    setSelectedDate(firstPurchasedDay(next))
     setEditing(null)
     setTicketFilter('all')
     setAccessFilter('all')
