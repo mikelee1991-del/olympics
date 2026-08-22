@@ -4,33 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { clearPlannerStorage, PLANNER_STORAGE_KEY } from './data/planner'
 
-describe('App watchlist', () => {
-  beforeEach(() => {
-    localStorage.clear()
-  })
-
-  afterEach(() => {
-    cleanup()
-  })
-
-  it('adds a country to the watchlist from the medal demo tab', async () => {
-    const user = userEvent.setup()
-    render(<App />)
-
-    await user.click(screen.getByRole('button', { name: 'Medal demo' }))
-    expect(screen.getByTestId('watchlist-empty')).toBeInTheDocument()
-
-    const usaButton = screen.getByRole('button', {
-      name: 'Add United States to watchlist',
-    })
-    await user.click(usaButton)
-
-    expect(screen.getByTestId('watchlist-items')).toHaveTextContent(
-      'United States',
-    )
-  })
-})
-
 describe('Split planner views', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -110,6 +83,10 @@ describe('Split planner views', () => {
     render(<App />)
 
     const nav = screen.getByRole('navigation', { name: 'Primary' })
+    expect(
+      within(nav).queryByRole('button', { name: 'Medal demo' }),
+    ).not.toBeInTheDocument()
+
     await user.click(within(nav).getByRole('button', { name: 'Map' }))
     expect(screen.getByTestId('map-view')).toBeInTheDocument()
     expect(screen.getByTestId('venue-map')).toBeInTheDocument()
@@ -153,11 +130,11 @@ describe('clearPlannerStorage', () => {
     localStorage.setItem(PLANNER_STORAGE_KEY, '[]')
     localStorage.setItem('olympics-planner-v1', '[]')
     localStorage.setItem('olympics-planner-v2-official', '[]')
-    localStorage.setItem('olympics-watchlist', '["USA"]')
+    localStorage.setItem('other-app-key', 'keep')
     clearPlannerStorage()
     expect(localStorage.getItem(PLANNER_STORAGE_KEY)).toBeNull()
     expect(localStorage.getItem('olympics-planner-v1')).toBeNull()
     expect(localStorage.getItem('olympics-planner-v2-official')).toBeNull()
-    expect(localStorage.getItem('olympics-watchlist')).toBe('["USA"]')
+    expect(localStorage.getItem('other-app-key')).toBe('keep')
   })
 })

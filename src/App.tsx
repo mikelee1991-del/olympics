@@ -3,18 +3,16 @@ import CalendarView from './components/CalendarView'
 import SessionsView from './components/SessionsView'
 import MapView from './components/MapView'
 import ConflictsView from './components/ConflictsView'
-import Standings from './components/Standings'
 import { usePlan } from './hooks/usePlan'
 import './App.css'
 
-type Tab = 'calendar' | 'sessions' | 'map' | 'conflicts' | 'standings'
+type Tab = 'calendar' | 'sessions' | 'map' | 'conflicts'
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'calendar', label: 'Calendar' },
   { id: 'sessions', label: 'Sessions' },
   { id: 'map', label: 'Map' },
   { id: 'conflicts', label: 'Conflicts' },
-  { id: 'standings', label: 'Medal demo' },
 ]
 
 export default function App() {
@@ -58,7 +56,6 @@ export default function App() {
           onOpenSessions={() => setTab('sessions')}
         />
       ) : null}
-      {tab === 'standings' ? <Standings /> : null}
     </div>
   )
 }
