@@ -336,7 +336,7 @@ export default function MonthCalendar({
               const hasBoatOnly =
                 boat.length > 0 && !hasTickets && !hasFree
               const wantList = [...ceremony, ...want]
-              const hasWant = wantList.length > 0 && !hasTickets
+              const hasWant = wantList.length > 0
 
               const ticketSports = [
                 ...new Set(purchased.map((s) => shortSport(s.sport))),
@@ -350,11 +350,11 @@ export default function MonthCalendar({
               let ariaExtra = ''
               if (hasTickets) {
                 ariaExtra += `, have tickets: ${ticketSports.join(', ')}`
-                if (ticketPeople) ariaExtra += `, going: ${ticketPeople}`
+                if (ticketPeople) ariaExtra += `, tickets: ${ticketPeople}`
               }
               if (hasWant) {
                 ariaExtra += `, wishlist: ${wantSports.join(', ')}`
-                if (wantPeople) ariaExtra += `, interested: ${wantPeople}`
+                if (wantPeople) ariaExtra += `, want: ${wantPeople}`
               }
               if (hasFree) {
                 ariaExtra += `, free course: ${free.map((s) => shortSport(s.sport)).join(', ')}`

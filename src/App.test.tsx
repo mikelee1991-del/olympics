@@ -40,6 +40,24 @@ describe('Split planner views', () => {
     expect(screen.getByTestId('count-want-para').textContent).toMatch(/\d+ want/)
   })
 
+  it('splits ticket holders from wishlist people in the day agenda', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(
+      screen.getByRole('gridcell', { name: /Jul 25.*have tickets/i }),
+    )
+    expect(screen.getByTestId('day-people-tickets')).toHaveTextContent(
+      /Tickets:/,
+    )
+
+    const augCell = screen.getAllByRole('gridcell', { name: /Aug 15/i })[0]
+    await user.click(augCell)
+    expect(screen.getByTestId('day-people-want')).toHaveTextContent(/Want:/)
+    expect(screen.queryByTestId('day-people-tickets')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('day-people-going')).not.toBeInTheDocument()
+  })
+
   it('shows combined ticket and want counts for both games', () => {
     render(<App />)
     expect(
