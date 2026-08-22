@@ -37,7 +37,7 @@ export function classifyAccess(s: AccessInput): AccessKind {
 }
 
 export function accessLabel(access: AccessKind): string {
-  if (access === 'free') return 'Free'
+  if (access === 'free') return 'Free course'
   if (access === 'boat') return 'Free w/ boat'
   return 'Ticketed'
 }

@@ -11,20 +11,32 @@ type Props = {
   onFocus: (session: PlannedSession) => void
 }
 
-function accessTag(s: PlannedSession): string {
+function accessKindLabel(s: PlannedSession): string {
   if (s.access === 'free') return 'Free course'
   if (s.access === 'boat') return 'Free w/ boat'
-  if (s.ticketQty != null) {
-    return `Ticketed · ${s.ticketQty} tix · ${s.ticketStatus}`
-  }
-  return `Ticketed · ${s.ticketStatus}`
+  return 'Ticketed'
 }
 
-function accessClass(s: PlannedSession): string {
+function accessKindClass(s: PlannedSession): string {
   if (s.access === 'free') return 'access-free'
   if (s.access === 'boat') return 'access-boat'
-  if (s.ticketQty != null) return 'access-qty'
   return 'access-ticketed'
+}
+
+function shortSport(sport: string): string {
+  const aliases: Record<string, string> = {
+    'Canoe Sprint': 'Canoe',
+    'Artistic Gymnastics': 'Gymnastics',
+    'Cycling Track': 'Track',
+    'Cycling Road': 'Road race',
+    'Beach Volleyball': 'Beach VB',
+    'Open Water Swimming': 'Open water',
+    'Modern Pentathlon': 'Pentathlon',
+    'Rugby Sevens': 'Rugby',
+    'Water Polo': 'Water polo',
+    'Table Tennis': 'Table tennis',
+  }
+  return aliases[sport] ?? sport
 }
 
 function sessionBit(s: PlannedSession): string {
@@ -42,6 +54,25 @@ function label(c: Conflict): string {
     ? ` (drive ${travel.driveMin} + park ${travel.parkExitMin + travel.parkEnterMin} + buffer ${travel.contingencyMin}; ${travel.distanceKm} km)`
     : ''
   return `${when}: only ${c.minutesBetween} min between ${c.a.sport} @ ${c.a.venueLabel} → ${c.b.sport} @ ${c.b.venueLabel}; ${need}${detail}`
+}
+
+function SidePills({ session }: { session: PlannedSession }) {
+  return (
+    <span className="conflict-side">
+      <span className="conflict-side-sport">{shortSport(session.sport)}</span>
+      <span
+        className={`access-badge ${accessKindClass(session)}`}
+        title={accessLabel(session.access)}
+      >
+        {accessKindLabel(session)}
+      </span>
+      {session.ticketQty != null ? (
+        <span className="access-badge access-qty">
+          {session.attendees.length}/{session.ticketQty} seats
+        </span>
+      ) : null}
+    </span>
+  )
 }
 
 export default function ConflictPanel({ byPerson, onFocus }: Props) {
@@ -67,8 +98,8 @@ export default function ConflictPanel({ byPerson, onFocus }: Props) {
         Overlaps and hops where the gap is shorter than drive + parking
         exit/enter + contingency. Each side shows whether it&apos;s{' '}
         <strong>ticketed</strong>, <strong>free course</strong>, or{' '}
-        <strong>free w/ boat</strong>. Purchased seats are seated by sport
-        interest (open seats stay empty — assign on Sessions).
+        <strong>free w/ boat</strong>. Purchased seats start by sport interest;
+        edits on Sessions stick after reload.
       </p>
       <div className="conflict-people">
         {people.map((person) => (
@@ -81,21 +112,11 @@ export default function ConflictPanel({ byPerson, onFocus }: Props) {
                     <span className={`tag ${c.type}`}>
                       {c.type === 'overlap' ? 'Double-booked' : "Can't make it"}
                     </span>
-                    <span
-                      className={`access-badge ${accessClass(c.a)}`}
-                      title={accessLabel(c.a.access)}
-                    >
-                      {accessTag(c.a)}
-                    </span>
+                    <SidePills session={c.a} />
                     <span className="conflict-vs" aria-hidden>
                       vs
                     </span>
-                    <span
-                      className={`access-badge ${accessClass(c.b)}`}
-                      title={accessLabel(c.b.access)}
-                    >
-                      {accessTag(c.b)}
-                    </span>
+                    <SidePills session={c.b} />
                   </div>
                   <button
                     type="button"
