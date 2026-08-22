@@ -3,6 +3,7 @@ import MonthCalendar from './MonthCalendar'
 import SessionList from './SessionList'
 import EditModal from './EditModal'
 import type { PlanState } from '../hooks/usePlan'
+import type { PersonId } from '../data/family'
 import { formatDisplayDate, type PlannedSession } from '../data/planner'
 
 type Props = {
@@ -23,6 +24,14 @@ function agendaRank(s: PlannedSession): number {
 
 function gamesLabel(date: string): string {
   return date.startsWith('2028-08') ? 'Paralympics' : 'Olympics'
+}
+
+function uniqueAttendees(sessions: PlannedSession[]): PersonId[] {
+  return [...new Set(sessions.flatMap((s) => s.attendees))]
+}
+
+function isPurchasedSession(s: PlannedSession): boolean {
+  return s.ticketQty != null || s.access === 'ticketed'
 }
 
 export default function CalendarView({
@@ -49,14 +58,15 @@ export default function CalendarView({
     })
 
   const dayHave = daySessions.filter((s) => s.ticketStatus === 'have')
-  const dayPurchased = dayHave.filter(
-    (s) => s.ticketQty != null || s.access === 'ticketed',
-  )
+  const dayPurchased = dayHave.filter(isPurchasedSession)
   const dayWant = daySessions.filter((s) => s.ticketStatus === 'want')
+  const dayGoing = dayHave.filter((s) => !isPurchasedSession(s))
 
-  const goingToday = [
-    ...new Set(daySessions.flatMap((s) => s.attendees)),
-  ]
+  const ticketPeople = uniqueAttendees(dayPurchased)
+  const wantPeople = uniqueAttendees(dayWant)
+  const goingPeople = uniqueAttendees(dayGoing)
+  const anyoneAssigned =
+    ticketPeople.length + wantPeople.length + goingPeople.length > 0
 
   useEffect(() => {
     const inScope = plan.sessions.some((s) => s.date === plan.selectedDate)
@@ -132,12 +142,29 @@ export default function CalendarView({
                     ? `${dayHave.length} free/have session${dayHave.length === 1 ? '' : 's'} this day`
                     : 'Sessions this day'}
           </p>
-          {goingToday.length > 0 ? (
-            <p className="day-people" data-testid="day-people">
-              <strong>Going:</strong> {goingToday.join(', ')}
+          {ticketPeople.length > 0 ? (
+            <p
+              className="day-people day-people-tickets"
+              data-testid="day-people-tickets"
+            >
+              <strong>Tickets:</strong> {ticketPeople.join(', ')}
             </p>
-          ) : daySessions.length > 0 ? (
-            <p className="day-people muted" data-testid="day-people">
+          ) : null}
+          {wantPeople.length > 0 ? (
+            <p className="day-people day-people-want" data-testid="day-people-want">
+              <strong>Want:</strong> {wantPeople.join(', ')}
+            </p>
+          ) : null}
+          {goingPeople.length > 0 ? (
+            <p
+              className="day-people day-people-going"
+              data-testid="day-people-going"
+            >
+              <strong>Going:</strong> {goingPeople.join(', ')}
+            </p>
+          ) : null}
+          {!anyoneAssigned && daySessions.length > 0 ? (
+            <p className="day-people muted" data-testid="day-people-empty">
               No one assigned yet — toggle names on each session below.
             </p>
           ) : null}
