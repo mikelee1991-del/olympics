@@ -322,12 +322,6 @@
   border: 1px solid color-mix(in srgb, var(--success) 55%, transparent);
 }
 
-.access-badge.access-boat {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid color-mix(in srgb, var(--info) 55%, transparent);
-}
-
 .access-badge.access-qty {
   background: var(--success-bg);
   color: var(--success-text);
@@ -375,11 +369,6 @@
 
 .session-card.access-free {
   border-left: 3px solid #2d8a4e;
-  padding-left: 0.75rem;
-}
-
-.session-card.access-boat {
-  border-left: 3px solid #2a6f9e;
   padding-left: 0.75rem;
 }
 
@@ -985,12 +974,6 @@
   border-color: color-mix(in srgb, var(--success) 50%, transparent);
 }
 
-.cal-cell.boat-day {
-  color: var(--snow);
-  background: color-mix(in srgb, var(--info-bg) 80%, var(--surface));
-  border-color: color-mix(in srgb, var(--info) 50%, transparent);
-}
-
 .cal-cell.active {
   border-color: var(--signal);
   box-shadow: inset 0 0 0 2px var(--signal);
@@ -1040,12 +1023,6 @@
   background: var(--success-bg);
   color: var(--success-text);
   border: 1px solid color-mix(in srgb, var(--success) 60%, transparent);
-}
-
-.cal-tag.boat {
-  background: var(--info-bg);
-  color: var(--info-text);
-  border: 1px solid color-mix(in srgb, var(--info) 60%, transparent);
 }
 
 .cal-sport {
