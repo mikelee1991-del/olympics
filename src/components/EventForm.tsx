@@ -32,6 +32,7 @@ function emptySession(): PlannedSession {
     notes: '',
     timeEstimated: true,
     access: 'ticketed',
+    games: 'olympic',
   }
 }
 
@@ -64,6 +65,7 @@ export default function EventForm({
       notes: String(fd.get('notes') || ''),
       timeEstimated: fd.get('timeEstimated') === 'on',
       access: String(fd.get('access') || 'ticketed') as AccessKind,
+      games: draft.games ?? 'olympic',
     }
     onSave(session)
   }

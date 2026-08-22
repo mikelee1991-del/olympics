@@ -4,8 +4,8 @@
 
 ### Product
 
-Los Angeles **2028 Summer Olympics** family ticket planner (not Winter Games).
-Schedule data is July 2028 summer sports/venues from the family spreadsheet.
+Los Angeles **2028 Summer Olympics / Paralympics** family ticket planner (not Winter Games).
+Olympic schedule is July 2028; Paralympic schedule is August 2028.
 
 ### Service
 
@@ -24,8 +24,9 @@ Standard scripts are in the root `package.json` / `README.md`:
 
 - Package manager is **pnpm** (`pnpm-lock.yaml`). Prefer it over npm/yarn.
 - Watchlist state is stored in browser `localStorage` under key `olympics-watchlist`.
-- Family schedule planner state is under `olympics-planner-v4-owned` (sessions, tickets, attendees, free/boat access tags, purchased tickets). Older planner keys are ignored after bumps.
-- Planner seed times come from the LA28 **Competition Schedule by Event V4.0** PDF (`src/data/officialSessions.json`). Conflicts use drive + parking exit/enter + contingency (`src/lib/travel.ts`). Free course events (marathon, race walk, road cycling) and boat-viewable water sports are tagged in `src/data/access.ts`.
+- Family schedule planner state is under `olympics-planner-v5-para` (Olympic + Paralympic sessions, tickets, attendees, free/boat access, purchased Olympic tickets). Older planner keys are ignored after bumps; Hard reset clears all `olympics-planner-*` keys.
+- Olympic seed times come from the LA28 **Competition Schedule by Event V4.0** PDF (`src/data/officialSessions.json`). Paralympic seed/placeholder times come from **Paralympic By Event V3.2** (`src/data/paralympicSessions.json`) — all Para seeded sessions start as **want** (no tickets yet). Calendar toggles Olympics · July vs Paralympics · August.
+- Conflicts use drive + parking exit/enter + contingency (`src/lib/travel.ts`). Free course events (marathon, race walk, road cycling) and boat-viewable water sports are tagged in `src/data/access.ts`.
 - Venue map uses OpenStreetMap tiles via Leaflet — needs network egress for tiles.
 - Hero imagery on the medal demo tab loads from Unsplash (summer athletics); planner does not depend on it.
 - `pnpm-workspace.yaml` must allow `esbuild` builds (`allowBuilds.esbuild: true`) for Vite.

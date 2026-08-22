@@ -12,9 +12,11 @@ import {
 } from './ownedTickets'
 import { resolveVenueId } from './venues'
 import official from './officialSessions.json'
+import paralympic from './paralympicSessions.json'
 
 export type TicketStatus = 'have' | 'want' | 'skip'
 export type SessionKind = 'MEDAL' | 'STD' | 'CEREMONY' | 'OTHER'
+export type GamesKind = 'olympic' | 'paralympic'
 export type { AccessKind }
 
 export type PlannedSession = {
@@ -39,6 +41,8 @@ export type PlannedSession = {
   access: AccessKind
   /** Purchased seat count when known */
   ticketQty?: number
+  /** Olympic vs Paralympic */
+  games: GamesKind
 }
 
 export type OfficialSession = {
@@ -59,8 +63,40 @@ export const OFFICIAL_META = {
   timezone: official.timezone,
 }
 
+export const PARALYMPIC_META = {
+  source: paralympic.source,
+  sourceUrl: paralympic.sourceUrl,
+  timezone: paralympic.timezone,
+}
+
 export const OFFICIAL_SESSIONS = official.sessions as OfficialSession[]
 export const OFFICIAL_SEED_CODES = new Set(official.seedCodes as string[])
+export const PARALYMPIC_SESSIONS = paralympic.sessions as OfficialSession[]
+export const PARALYMPIC_SEED_CODES = new Set(paralympic.seedCodes as string[])
+
+/** Map Para sports onto family Olympic interest lists when possible. */
+export function sportInterestKey(sport: string): string {
+  const map: Record<string, string> = {
+    'Para Swimming': 'Swimming',
+    'Para Athletics (Track & Field)': 'Athletics',
+    'Para Athletics (Marathon)': 'Athletics',
+    'Para Cycling Track': 'Cycling Track',
+    'Para Cycling Road': 'Cycling Road',
+    'Para Archery': 'Archery',
+    'Para Badminton': 'Badminton',
+    'Para Canoe': 'Canoe Sprint',
+    'Para Climbing': 'Climbing',
+    'Para Equestrian': 'Equestrian',
+    'Para Rowing': 'Rowing',
+    'Para Table Tennis': 'Table Tennis',
+    'Para Triathlon': 'Triathlon',
+    'Wheelchair Basketball': 'Basketball',
+    'Wheelchair Tennis': 'Tennis',
+    'Sitting Volleyball': 'Volleyball',
+    Ceremonies: 'Ceremonies',
+  }
+  return map[sport] ?? sport
+}
 
 export function formatDisplayDate(iso: string): string {
   const d = new Date(`${iso}T12:00:00`)
@@ -75,6 +111,7 @@ function kindFromOfficial(s: OfficialSession): SessionKind {
   if (s.sessionType === 'Ceremony' || s.sport === 'Ceremonies') return 'CEREMONY'
   if (
     s.sessionType === 'Final' ||
+    s.sessionType === 'Bronze' ||
     /medal/i.test(s.description) ||
     s.sessionType === 'Semifinal'
   ) {
@@ -83,17 +120,23 @@ function kindFromOfficial(s: OfficialSession): SessionKind {
   return 'STD'
 }
 
-export function officialToPlanned(s: OfficialSession): PlannedSession {
+export function officialToPlanned(
+  s: OfficialSession,
+  games: GamesKind = 'olympic',
+): PlannedSession {
   const access = classifyAccess(s)
   const note = accessNote(access)
-  const owned = OWNED_TICKET_BY_CODE[s.code]
+  const owned = games === 'olympic' ? OWNED_TICKET_BY_CODE[s.code] : undefined
   const baseNotes = `${s.sessionType}: ${s.description}`.trim()
   const ownedNote = owned
     ? `Have ${owned.qty} ticket${owned.qty === 1 ? '' : 's'}${owned.label ? ` (${owned.label})` : ''}.`
-    : ''
+    : games === 'paralympic'
+      ? 'Paralympics placeholder — no tickets purchased yet.'
+      : ''
+  const interestSport = sportInterestKey(s.sport)
   const notes = [baseNotes, note, ownedNote].filter(Boolean).join(' — ')
   return {
-    id: s.code.toLowerCase(),
+    id: `${games === 'paralympic' ? 'para-' : ''}${s.code.toLowerCase()}`,
     sport: s.sport,
     venueLabel: s.venue,
     venueId: resolveVenueId(s.venue),
@@ -101,41 +144,56 @@ export function officialToPlanned(s: OfficialSession): PlannedSession {
     startTime: s.startTime,
     endTime: s.endTime,
     kind: kindFromOfficial(s),
-    ticketStatus: owned || access === 'free' ? 'have' : 'want',
+    // Paralympics: placeholder only — no purchases yet (even free-course sports stay want).
+    ticketStatus:
+      games === 'paralympic'
+        ? 'want'
+        : owned || access === 'free'
+          ? 'have'
+          : 'want',
     attendees: owned
-      ? attendeesForOwnedTickets(s.sport, owned.qty)
-      : interestedPeople(s.sport),
+      ? attendeesForOwnedTickets(interestSport, owned.qty)
+      : interestedPeople(interestSport),
     notes,
     timeEstimated: false,
     sessionCode: s.code,
     access,
     ticketQty: owned?.qty,
+    games,
   }
 }
 
-/** Family wishlist + free/boat sessions + purchased tickets. */
+/** Family wishlist + free/boat + owned Olympic tickets + Paralympic medal seed. */
 export function buildSeedPlan(): PlannedSession[] {
-  const codes = new Set([
+  const olympicCodes = new Set([
     ...OFFICIAL_SEED_CODES,
     ...freeOrBoatCodes(OFFICIAL_SESSIONS),
     ...OWNED_TICKETS.map((t) => t.code),
   ])
-  return OFFICIAL_SESSIONS.filter((s) => codes.has(s.code))
-    .map(officialToPlanned)
-    .sort((a, b) =>
-      `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
-    )
+  const olympic = OFFICIAL_SESSIONS.filter((s) => olympicCodes.has(s.code)).map(
+    (s) => officialToPlanned(s, 'olympic'),
+  )
+  const para = PARALYMPIC_SESSIONS.filter((s) =>
+    PARALYMPIC_SEED_CODES.has(s.code),
+  ).map((s) => officialToPlanned(s, 'paralympic'))
+  return [...olympic, ...para].sort((a, b) =>
+    `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
+  )
 }
 
-/** Backfill access on older saved plans. */
+/** Backfill access / games on older saved plans. */
 export function withAccess(session: PlannedSession): PlannedSession {
-  if (session.access) return session
-  const access = classifyAccess({
-    sport: session.sport,
-    venue: session.venueLabel,
-    description: session.notes,
-  })
-  return { ...session, access }
+  const access =
+    session.access ??
+    classifyAccess({
+      sport: session.sport,
+      venue: session.venueLabel,
+      description: session.notes,
+    })
+  const games =
+    session.games ??
+    (session.date.startsWith('2028-08') ? 'paralympic' : 'olympic')
+  return { ...session, access, games }
 }
 
 /**
@@ -145,14 +203,12 @@ export function withAccess(session: PlannedSession): PlannedSession {
 export function mergeFreeBoatSessions(
   sessions: PlannedSession[],
 ): PlannedSession[] {
-  const byId = new Map(
-    sessions.map((s) => [s.id, withAccess(s)] as const),
-  )
+  const byId = new Map(sessions.map((s) => [s.id, withAccess(s)] as const))
 
   for (const official of OFFICIAL_SESSIONS) {
     const access = classifyAccess(official)
     if (access === 'ticketed') continue
-    const planned = officialToPlanned(official)
+    const planned = officialToPlanned(official, 'olympic')
     const existing = byId.get(planned.id)
     if (!existing) {
       byId.set(planned.id, planned)
@@ -161,6 +217,7 @@ export function mergeFreeBoatSessions(
     byId.set(planned.id, {
       ...existing,
       access,
+      games: 'olympic',
       venueLabel: planned.venueLabel,
       venueId: planned.venueId,
       date: planned.date,
@@ -188,12 +245,12 @@ export function mergeFreeBoatSessions(
 export function mergeOwnedTickets(
   sessions: PlannedSession[],
 ): PlannedSession[] {
-  const byId = new Map(sessions.map((s) => [s.id, s] as const))
+  const byId = new Map(sessions.map((s) => [s.id, withAccess(s)] as const))
 
   for (const owned of OWNED_TICKETS) {
     const official = OFFICIAL_SESSIONS.find((s) => s.code === owned.code)
     if (!official) continue
-    const planned = officialToPlanned(official)
+    const planned = officialToPlanned(official, 'olympic')
     const existing = byId.get(planned.id)
     if (!existing) {
       byId.set(planned.id, planned)
@@ -202,7 +259,6 @@ export function mergeOwnedTickets(
     byId.set(planned.id, {
       ...existing,
       ...planned,
-      // Keep skip only if user explicitly skipped; otherwise mark have.
       ticketStatus: existing.ticketStatus === 'skip' ? 'skip' : 'have',
       ticketQty: owned.qty,
       attendees:
@@ -219,17 +275,37 @@ export function mergeOwnedTickets(
   )
 }
 
-/** Apply free/boat + owned-ticket merges for saved plans. */
+/** Ensure Paralympic seed sessions exist (want — no tickets yet). */
+export function mergeParalympicSessions(
+  sessions: PlannedSession[],
+): PlannedSession[] {
+  const byId = new Map(sessions.map((s) => [s.id, withAccess(s)] as const))
+  for (const official of PARALYMPIC_SESSIONS) {
+    if (!PARALYMPIC_SEED_CODES.has(official.code)) continue
+    const planned = officialToPlanned(official, 'paralympic')
+    if (!byId.has(planned.id)) byId.set(planned.id, planned)
+  }
+  return [...byId.values()].sort((a, b) =>
+    `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
+  )
+}
+
+/** Apply free/boat + owned + paralympic merges for saved plans. */
 export function hydratePlan(sessions: PlannedSession[]): PlannedSession[] {
-  return mergeOwnedTickets(mergeFreeBoatSessions(sessions))
+  return mergeParalympicSessions(
+    mergeOwnedTickets(mergeFreeBoatSessions(sessions)),
+  )
 }
 
 export const ALL_SPORTS = [
-  ...new Set(OFFICIAL_SESSIONS.map((s) => s.sport)),
+  ...new Set([
+    ...OFFICIAL_SESSIONS.map((s) => s.sport),
+    ...PARALYMPIC_SESSIONS.map((s) => s.sport),
+  ]),
 ].sort()
 
-/** Bump key when owned tickets / seed source changes. */
-export const PLANNER_STORAGE_KEY = 'olympics-planner-v4-owned'
+/** Bump key when Paralympic seed is added. */
+export const PLANNER_STORAGE_KEY = 'olympics-planner-v5-para'
 
 /** Clear every planner key (current + legacy) before a hard reset. */
 export function clearPlannerStorage(): void {
@@ -238,6 +314,7 @@ export function clearPlannerStorage(): void {
     'olympics-planner-v1',
     'olympics-planner-v2-official',
     'olympics-planner-v3-access',
+    'olympics-planner-v4-owned',
   ])
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i)

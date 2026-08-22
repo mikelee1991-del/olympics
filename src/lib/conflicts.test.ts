@@ -23,6 +23,7 @@ function session(
     notes: '',
     timeEstimated: false,
     access: 'ticketed',
+    games: 'olympic',
     ...partial,
   }
 }

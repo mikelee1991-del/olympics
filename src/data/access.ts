@@ -20,10 +20,13 @@ export function classifyAccess(s: AccessInput): AccessKind {
   const sport = s.sport
   const blob = `${s.venue} ${s.description ?? ''}`.toLowerCase()
 
-  if (sport === 'Cycling Road') return 'free'
-  if (sport === 'Athletics') {
-    if (/marathon|race walk|half-marathon/.test(blob)) return 'free'
+  if (sport === 'Cycling Road' || sport === 'Para Cycling Road') return 'free'
+  if (sport === 'Athletics' || sport === 'Para Athletics (Marathon)') {
+    if (/marathon|race walk|half-marathon/.test(blob) || sport.includes('Marathon'))
+      return 'free'
   }
+  if (sport === 'Para Triathlon') return 'free' // often course-based; confirm later
+
 
   if (sport === 'Sailing') return 'boat'
   if (sport === 'Open Water Swimming') return 'boat'

@@ -6,6 +6,7 @@ import {
   hydratePlan,
   PLANNER_STORAGE_KEY,
   type AccessKind,
+  type GamesKind,
   type PlannedSession,
   type TicketStatus,
 } from '../data/planner'
@@ -48,6 +49,7 @@ export function usePlan() {
   }, [])
   const [sessions, setSessions] = useState<PlannedSession[]>(boot.plan)
   const [selectedDate, setSelectedDate] = useState<string | null>(boot.day)
+  const [gamesFilter, setGamesFilter] = useState<GamesKind>('olympic')
   const [ticketFilter, setTicketFilter] = useState<TicketStatus | 'all'>('all')
   const [accessFilter, setAccessFilter] = useState<AccessKind | 'all'>('all')
   const [personFilter, setPersonFilter] = useState<PersonId | 'all'>('all')
@@ -160,6 +162,8 @@ export function usePlan() {
     filtered,
     selectedDate,
     setSelectedDate,
+    gamesFilter,
+    setGamesFilter,
     ticketFilter,
     setTicketFilter,
     accessFilter,
