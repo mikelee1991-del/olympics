@@ -2,6 +2,7 @@ import {
   accessNote,
   classifyAccess,
   freeOrBoatCodes,
+  isFreeAccess,
   type AccessKind,
 } from './access'
 import { interestedPeople, type PersonId } from './family'
@@ -148,7 +149,7 @@ export function officialToPlanned(
     ticketStatus:
       games === 'paralympic'
         ? 'want'
-        : owned || access === 'free'
+        : owned || isFreeAccess(access)
           ? 'have'
           : 'want',
     attendees: owned
@@ -231,7 +232,7 @@ export function mergeFreeBoatSessions(
       sessionCode: planned.sessionCode,
       timeEstimated: false,
       ticketStatus:
-        access === 'free' && existing.ticketStatus !== 'skip'
+        isFreeAccess(access) && existing.ticketStatus !== 'skip'
           ? 'have'
           : existing.ticketStatus,
       notes: existing.notes.includes('LA28:') || existing.notes.includes('boat')

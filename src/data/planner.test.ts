@@ -75,6 +75,33 @@ describe('official seed plan', () => {
     expect(merged.find((s) => s.id === 'ath01')).toBeTruthy()
   })
 
+  it('promotes saved Olympic boat sessions to have on hydrate', () => {
+    const thin: PlannedSession[] = [
+      {
+        id: 'sal01',
+        sport: 'Sailing',
+        venueLabel: '(Windsurfing & Kite) Belmont Shore',
+        venueId: 'belmont',
+        date: '2028-07-16',
+        startTime: '14:00',
+        endTime: '20:00',
+        kind: 'OTHER',
+        ticketStatus: 'want',
+        attendees: [],
+        notes: 'old wishlist',
+        timeEstimated: false,
+        sessionCode: 'SAL01',
+        access: 'boat',
+        games: 'olympic',
+      },
+    ]
+    const merged = mergeFreeBoatSessions(thin)
+    const sailing = merged.find((s) => s.sessionCode === 'SAL01')
+    expect(sailing?.ticketStatus).toBe('have')
+    expect(sailing?.access).toBe('boat')
+    expect(sailing?.attendees).toEqual([])
+  })
+
   it('merges Paralympic seed into an older Olympic-only plan', () => {
     const thin: PlannedSession[] = [
       {

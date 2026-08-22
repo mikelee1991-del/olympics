@@ -34,6 +34,9 @@ describe('Split planner views', () => {
     expect(
       screen.getByRole('gridcell', { name: /Jul 19.*free:/i }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('gridcell', { name: /Jul 16.*free:.*Sailing · boat/i }),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('para-banner')).toHaveTextContent(
       /No Paralympic tickets yet/i,
     )
