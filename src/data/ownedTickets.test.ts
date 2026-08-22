@@ -57,5 +57,27 @@ describe('owned tickets', () => {
     )
     expect(merged.find((s) => s.sessionCode === 'HBL42')?.ticketQty).toBe(3)
     expect(merged.find((s) => s.sessionCode === 'CSP04')?.ticketQty).toBe(5)
+    // First insert seats by interest only
+    expect(merged.find((s) => s.sessionCode === 'ARC10')?.attendees).toEqual([
+      'Jason',
+    ])
+  })
+
+  it('keeps saved owned-ticket attendees across hydratePlan', () => {
+    const seed = buildSeedPlan()
+    const arc = seed.find((s) => s.sessionCode === 'ARC10')!
+    expect(arc.attendees).toEqual(['Jason'])
+
+    const edited: PlannedSession[] = seed.map((s) =>
+      s.sessionCode === 'ARC10'
+        ? { ...s, attendees: ['Jason', 'Mike'], notes: 'user note' }
+        : s,
+    )
+    const hydrated = hydratePlan(edited)
+    const after = hydrated.find((s) => s.sessionCode === 'ARC10')!
+    expect(after.attendees).toEqual(['Jason', 'Mike'])
+    expect(after.notes).toBe('user note')
+    expect(after.ticketStatus).toBe('have')
+    expect(after.ticketQty).toBe(4)
   })
 })

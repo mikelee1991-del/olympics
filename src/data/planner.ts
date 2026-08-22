@@ -244,7 +244,7 @@ export function mergeFreeBoatSessions(
   )
 }
 
-/** Force purchased tickets into the plan as have (with qty + attendees). */
+/** Force purchased tickets into the plan as have (with qty). */
 export function mergeOwnedTickets(
   sessions: PlannedSession[],
 ): PlannedSession[] {
@@ -256,16 +256,26 @@ export function mergeOwnedTickets(
     const planned = officialToPlanned(official, 'olympic')
     const existing = byId.get(planned.id)
     if (!existing) {
+      // First insert: seat by sport interest only (no padding).
       byId.set(planned.id, planned)
       continue
     }
+    // Keep the user's attendees/notes — only force have + qty.
     byId.set(planned.id, {
       ...existing,
-      ...planned,
       ticketStatus: existing.ticketStatus === 'skip' ? 'skip' : 'have',
       ticketQty: owned.qty,
-      // Always re-seat owned tickets by sport interest (don't keep padded seats).
-      attendees: planned.attendees,
+      access: planned.access,
+      games: 'olympic',
+      sessionCode: planned.sessionCode,
+      venueLabel: planned.venueLabel,
+      venueId: planned.venueId,
+      date: planned.date,
+      startTime: planned.startTime,
+      endTime: planned.endTime,
+      kind: planned.kind,
+      timeEstimated: false,
+      sport: planned.sport,
     })
   }
 

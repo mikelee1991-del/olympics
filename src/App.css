@@ -311,6 +311,19 @@
   font-weight: 600;
 }
 
+.conflict-side {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.conflict-side-sport {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--snow);
+}
+
 .conflict-vs {
   font-size: 0.75rem;
   opacity: 0.65;
