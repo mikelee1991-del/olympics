@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { type PersonId } from '../data/family'
+import { isFreeAccess } from '../data/access'
 import {
   buildSeedPlan,
   clearPlannerStorage,
@@ -75,7 +76,11 @@ export function usePlan() {
         ticketFilter === 'all' ? true : s.ticketStatus === ticketFilter,
       )
       .filter((s) =>
-        accessFilter === 'all' ? true : s.access === accessFilter,
+        accessFilter === 'all'
+          ? true
+          : accessFilter === 'free'
+            ? isFreeAccess(s.access)
+            : s.access === accessFilter,
       )
       .filter((s) =>
         personFilter === 'all' ? true : s.attendees.includes(personFilter),

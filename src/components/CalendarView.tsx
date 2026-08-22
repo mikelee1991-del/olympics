@@ -4,6 +4,7 @@ import SessionList from './SessionList'
 import EditModal from './EditModal'
 import type { PlanState } from '../hooks/usePlan'
 import type { PersonId } from '../data/family'
+import { isFreeAccess } from '../data/access'
 import { formatDisplayDate, type PlannedSession } from '../data/planner'
 
 type Props = {
@@ -17,9 +18,8 @@ function agendaRank(s: PlannedSession): number {
     return 0
   if (s.ticketStatus === 'have') return 1
   if (s.ticketStatus === 'want') return 2
-  if (s.access === 'free') return 3
-  if (s.access === 'boat') return 4
-  return 5
+  if (isFreeAccess(s.access)) return 3
+  return 4
 }
 
 function gamesLabel(date: string): string {
@@ -60,7 +60,9 @@ export default function CalendarView({
   const dayHave = daySessions.filter((s) => s.ticketStatus === 'have')
   const dayPurchased = dayHave.filter(isPurchasedSession)
   const dayWant = daySessions.filter((s) => s.ticketStatus === 'want')
-  const dayGoing = dayHave.filter((s) => !isPurchasedSession(s))
+  const dayGoing = dayHave.filter(
+    (s) => !isPurchasedSession(s) && isFreeAccess(s.access),
+  )
 
   const ticketPeople = uniqueAttendees(dayPurchased)
   const wantPeople = uniqueAttendees(dayWant)
